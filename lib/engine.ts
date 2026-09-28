@@ -424,7 +424,7 @@ export function getAffectedLeavePeriods(
 
   // Resolve final handling per period
   const result: AffectedPeriod[] = [];
-  for (const [key, value] of periodMap.entries()) {
+  for (const [key, value] of Array.from(periodMap.entries())) {
     const [dateStr, periodStr, subjectCode] = key.split(":");
     const finalType = getStrongestLeaveType(value.types);
 
