@@ -267,7 +267,7 @@ function RoomsPageContent() {
 
           {/* Floating Room Panel when room is selected */}
           {selectedStatusData && (
-            <div className="absolute top-4 right-4 z-30">
+            <div className="absolute inset-x-3 top-20 bottom-20 z-30 overflow-y-auto sm:inset-x-auto sm:top-4 sm:right-4 sm:bottom-auto sm:overflow-visible">
               <RoomPanel
                 statusData={selectedStatusData}
                 selectedTime={selectedTime}

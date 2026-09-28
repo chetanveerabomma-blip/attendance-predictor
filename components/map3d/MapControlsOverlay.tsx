@@ -5,15 +5,11 @@ import { MapViewState } from "./types";
 import {
   Layers,
   Eye,
-  Maximize2,
-  Minimize2,
   Camera,
   Play,
   Pause,
   RotateCcw,
-  Sparkles,
 } from "lucide-react";
-import { NBButton } from "@/components/nb/NBButton";
 
 interface MapControlsOverlayProps {
   viewState: MapViewState;
@@ -43,6 +39,8 @@ export const MapControlsOverlay: React.FC<MapControlsOverlayProps> = ({
 
   // Time-lapse player animation
   const animFrameRef = useRef<number | null>(null);
+  const onTimeChangeRef = useRef(onTimeChange);
+  onTimeChangeRef.current = onTimeChange;
 
   useEffect(() => {
     if (!isPlayingTimeLapse) {
@@ -53,23 +51,27 @@ export const MapControlsOverlay: React.FC<MapControlsOverlayProps> = ({
     let lastTimestamp = performance.now();
     const [h, m] = selectedTime.split(":").map(Number);
     let currentTotalMinutes = (h || 8) * 60 + (m || 0);
+    let lastPublishedMinute = Math.floor(currentTotalMinutes / 5) * 5;
 
     const step = (now: number) => {
       const deltaMs = now - lastTimestamp;
       lastTimestamp = now;
 
-      // 08:00 to 18:00 = 600 minutes. 20 seconds = 30 min per second at 1x
-      const minutesPerSecond = 30 * timeLapseSpeed;
+      // Advance five simulated minutes per update to avoid recalculating the room map every frame.
+      const minutesPerSecond = 5 * timeLapseSpeed;
       currentTotalMinutes += (deltaMs / 1000) * minutesPerSecond;
 
       if (currentTotalMinutes >= 18 * 60) {
         currentTotalMinutes = 8 * 60; // loop back to 08:00
       }
 
-      const newH = Math.floor(currentTotalMinutes / 60);
-      const newM = Math.floor(currentTotalMinutes % 60);
-      const formatted = `${String(newH).padStart(2, "0")}:${String(newM).padStart(2, "0")}`;
-      onTimeChange(formatted);
+      const publishedMinute = Math.floor(currentTotalMinutes / 5) * 5;
+      if (publishedMinute !== lastPublishedMinute) {
+        lastPublishedMinute = publishedMinute;
+        const newH = Math.floor(publishedMinute / 60);
+        const newM = publishedMinute % 60;
+        onTimeChangeRef.current(`${String(newH).padStart(2, "0")}:${String(newM).padStart(2, "0")}`);
+      }
 
       animFrameRef.current = requestAnimationFrame(step);
     };
@@ -78,7 +80,7 @@ export const MapControlsOverlay: React.FC<MapControlsOverlayProps> = ({
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [isPlayingTimeLapse, timeLapseSpeed, onTimeChange]);
+  }, [isPlayingTimeLapse, timeLapseSpeed, selectedTime]);
 
   return (
     <>
@@ -120,31 +122,35 @@ export const MapControlsOverlay: React.FC<MapControlsOverlayProps> = ({
       </div>
 
       {/* 2. Top-Right Mode Action Pills */}
-      <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+      <div className="absolute top-4 right-4 z-20 flex max-w-[calc(100%-4.5rem)] flex-wrap justify-end gap-1.5 sm:gap-2">
         {/* Explode Toggle */}
         <button
           onClick={() => onUpdateViewState({ isExploded: !isExploded })}
-          className={`flex items-center gap-1.5 px-3 py-1.5 font-heading text-xs font-black uppercase rounded-[2px] border-2 border-black shadow-[2px_2px_0px_#0A0A0A] transition-all ${
+          title={isExploded ? "Collapse floors" : "Explode floors"}
+          aria-label={isExploded ? "Collapse floors" : "Explode floors"}
+          className={`flex items-center gap-1.5 px-2 py-1.5 sm:px-3 font-heading text-xs font-black uppercase rounded-[2px] border-2 border-black shadow-[2px_2px_0px_#0A0A0A] transition-all ${
             isExploded
               ? "bg-[#FFD93D] text-black"
               : "bg-white text-black hover:bg-gray-100"
           }`}
         >
           <Layers size={13} />
-          {isExploded ? "COLLAPSE" : "EXPLODE"}
+          <span className="hidden sm:inline">{isExploded ? "COLLAPSE" : "EXPLODE"}</span>
         </button>
 
         {/* Cutaway Toggle */}
         <button
           onClick={() => onUpdateViewState({ isCutaway: !isCutaway })}
-          className={`flex items-center gap-1.5 px-3 py-1.5 font-heading text-xs font-black uppercase rounded-[2px] border-2 border-black shadow-[2px_2px_0px_#0A0A0A] transition-all ${
+          title={isCutaway ? "Disable cutaway" : "Enable cutaway"}
+          aria-label={isCutaway ? "Disable cutaway" : "Enable cutaway"}
+          className={`flex items-center gap-1.5 px-2 py-1.5 sm:px-3 font-heading text-xs font-black uppercase rounded-[2px] border-2 border-black shadow-[2px_2px_0px_#0A0A0A] transition-all ${
             isCutaway
               ? "bg-[#4D96FF] text-white"
               : "bg-white text-black hover:bg-gray-100"
           }`}
         >
           <Eye size={13} />
-          CUTAWAY
+          <span className="hidden sm:inline">CUTAWAY</span>
         </button>
 
         {/* Camera Ortho/Perspective Toggle */}
@@ -154,10 +160,12 @@ export const MapControlsOverlay: React.FC<MapControlsOverlayProps> = ({
               cameraMode: cameraMode === "orthographic" ? "perspective" : "orthographic",
             })
           }
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-black font-heading text-xs font-black uppercase rounded-[2px] border-2 border-black shadow-[2px_2px_0px_#0A0A0A] hover:bg-gray-100"
+          title={cameraMode === "orthographic" ? "Switch to perspective" : "Switch to isometric"}
+          aria-label={cameraMode === "orthographic" ? "Switch to perspective" : "Switch to isometric"}
+          className="flex items-center gap-1.5 px-2 py-1.5 sm:px-3 bg-white text-black font-heading text-xs font-black uppercase rounded-[2px] border-2 border-black shadow-[2px_2px_0px_#0A0A0A] hover:bg-gray-100"
         >
           <Camera size={13} />
-          {cameraMode === "orthographic" ? "ISOMETRIC" : "3D PERSPECTIVE"}
+          <span className="hidden sm:inline">{cameraMode === "orthographic" ? "ISOMETRIC" : "3D PERSPECTIVE"}</span>
         </button>
       </div>
 
