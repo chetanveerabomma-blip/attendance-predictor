@@ -25,6 +25,7 @@ interface FloorManagerState {
   overrides: OverridesData;
   setDate: (date: string) => void;
   setTime: (time: string) => void;
+  setLiveTime: (date: string, time: string) => void;
   setLiveNow: (live: boolean) => void;
   setStrictReservation: (strict: boolean) => void;
   setActiveView: (view: "grid" | "timeline" | "list") => void;
@@ -67,6 +68,7 @@ export const useFloorStore = create<FloorManagerState>((set) => ({
   overrides: overridesData as unknown as OverridesData,
   setDate: (selectedDate) => set({ selectedDate, isLiveNow: false }),
   setTime: (selectedTime) => set({ selectedTime, isLiveNow: false }),
+  setLiveTime: (selectedDate, selectedTime) => set({ selectedDate, selectedTime, isLiveNow: true }),
   setLiveNow: (isLiveNow) => set({ isLiveNow }),
   setStrictReservation: (strictReservation) => set({ strictReservation }),
   setActiveView: (activeView) => set({ activeView }),

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Database, LayoutGrid, Search, ShieldCheck } from "lucide-react";
+import { Box, Database, LayoutGrid, Search, ShieldCheck } from "lucide-react";
 
 const links = [
+  { href: "/rooms", label: "3D MAP", icon: Box },
   { href: "/grid", label: "ROOM GRID", icon: LayoutGrid },
   { href: "/finder", label: "AI FINDER", icon: Search },
   { href: "/data", label: "DATA AUDIT", icon: Database },
