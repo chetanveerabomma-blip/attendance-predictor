@@ -1,9 +1,9 @@
 # ATTENDANCE PREDICTOR — SRM TRICHY (SCHOOL OF EEE)
 
-## Demo Link:
-https://chetanveerabomma-blip.github.io/attendance-predictor/
-
 Official analytical attendance forecasting portal for SRM Trichy School of EEE students (Autumn Semester: **29 Aug 2026 to 29 Nov 2026**).
+
+### Demo Link:
+https://chetanveerabomma-blip.github.io/attendance-predictor/
 
 Built strictly with **Next.js 14 (App Router)**, **TypeScript**, **Tailwind CSS**, **Custom Neobrutalism Design System**, **Zustand**, **Prisma + SQLite**, and **Vitest**.
 
