@@ -10,6 +10,7 @@ import { parseISO, format, addDays, isBefore, isAfter, isEqual, isSunday } from 
 import { AttendancePolicy, DEFAULT_POLICY, LeaveType, MedicalHandlingMode } from "../config/policy";
 import { Holiday, DayOrderOverride, WeekSchedule, DayKey, getDayKeyFromDate, isHoliday } from "./dates";
 
+
 export const SEMESTER_START = "2026-08-29";
 export const SEMESTER_END = "2026-11-29";
 export const THRESHOLD_DETENTION = 0.75;
@@ -424,7 +425,7 @@ export function getAffectedLeavePeriods(
 
   // Resolve final handling per period
   const result: AffectedPeriod[] = [];
-  for (const [key, value] of periodMap.entries()) {
+  for (const [key, value] of Array.from(periodMap.entries())) {
     const [dateStr, periodStr, subjectCode] = key.split(":");
     const finalType = getStrongestLeaveType(value.types);
 

@@ -261,7 +261,7 @@ export async function executeAdvisorTool(
             startDate,
             endDate,
             scope: target.code,
-            halfDay: args.halfDay,
+            isHalfDay: args.halfDay,
             medicalApproved: args.medicalApproved,
           },
           context.weekSchedule,

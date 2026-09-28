@@ -12,7 +12,6 @@ import {
   CheckCircle,
   HelpCircle,
   Clock,
-  ArrowRight,
   ShieldCheck,
   ChevronDown,
   Sparkles,
@@ -73,14 +72,14 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Link href="/register">
+              <Link href="/dashboard">
                 <NBButton size="lg" variant="primary">
-                  Get Started Free <ArrowRight className="w-5 h-5 ml-2" />
+                  Attendance
                 </NBButton>
               </Link>
-              <Link href="/dashboard">
+              <Link href="/grid">
                 <NBButton size="lg" variant="outline">
-                  Try Live Calculator
+                  Floor System
                 </NBButton>
               </Link>
             </div>
@@ -533,18 +532,6 @@ export default function LandingPage() {
             <p className="font-mono text-sm text-zinc-700 max-w-xl mx-auto">
               Login with your registration number to access your custom timetable and calculate your personal safe-bunk quota.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/register">
-                <NBButton size="lg" variant="primary">
-                  Register Your Section Now
-                </NBButton>
-              </Link>
-              <Link href="/login">
-                <NBButton size="lg" variant="outline">
-                  Existing Student Login
-                </NBButton>
-              </Link>
-            </div>
           </div>
         </div>
       </section>

@@ -4,6 +4,7 @@ export interface TabItem {
   id: string;
   label: string;
   badge?: string | number;
+  icon?: React.ReactNode;
 }
 
 export interface NBTabsProps {
@@ -28,6 +29,7 @@ export const NBTabs: React.FC<NBTabsProps> = ({ tabs, activeTab, onChange, class
                 : "bg-white text-zinc-700 hover:bg-zinc-100 shadow-[2px_2px_0px_#0A0A0A]"
             }`}
           >
+            {tab.icon}
             <span>{tab.label}</span>
             {tab.badge !== undefined && (
               <span className="ml-2 font-mono text-[10px] bg-nb-ink text-white px-1.5 py-0.5 rounded-none font-bold">

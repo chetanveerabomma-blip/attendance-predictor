@@ -3,7 +3,7 @@ import { AttendanceStatus } from "@/lib/engine";
 
 export interface NBBadgeProps {
   status?: AttendanceStatus;
-  variant?: "safe" | "warning" | "danger" | "irreversible" | "default" | "purple";
+  variant?: "safe" | "warning" | "danger" | "irreversible" | "default" | "purple" | "blue" | "gray" | "yellow";
   children?: React.ReactNode;
   className?: string;
   size?: "sm" | "md";
@@ -48,6 +48,9 @@ export const NBBadge: React.FC<NBBadgeProps> = ({
     irreversible: "hazard-stripes text-white font-black border-nb-ink shadow-[2px_2px_0px_#FF3B30]",
     purple: "bg-nb-purple text-nb-ink border-nb-ink",
     default: "bg-white text-nb-ink border-nb-ink",
+    blue: "bg-nb-blue text-white border-nb-ink",
+    gray: "bg-zinc-200 text-nb-ink border-nb-ink",
+    yellow: "bg-nb-yellow text-nb-ink border-nb-ink",
   };
 
   const sizeStyles = {

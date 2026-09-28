@@ -1,7 +1,7 @@
 import React from "react";
 
 export interface NBButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "danger" | "safe" | "outline" | "purple";
+  variant?: "primary" | "secondary" | "danger" | "safe" | "outline" | "purple" | "pink" | "yellow" | "green";
   size?: "sm" | "md" | "lg";
 }
 
@@ -28,6 +28,9 @@ export const NBButton: React.FC<NBButtonProps> = ({
     danger: "bg-nb-red text-white hover:bg-red-600",
     safe: "bg-nb-green text-nb-ink hover:bg-green-500",
     purple: "bg-nb-purple text-nb-ink hover:bg-purple-400",
+    pink: "bg-nb-pink text-nb-ink hover:bg-pink-400",
+    yellow: "bg-nb-yellow text-nb-ink hover:bg-yellow-400",
+    green: "bg-nb-green text-nb-ink hover:bg-green-500",
     outline: "bg-white text-nb-ink hover:bg-zinc-100",
   };
 

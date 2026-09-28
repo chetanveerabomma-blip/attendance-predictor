@@ -1,16 +1,20 @@
 import React from "react";
 
 export interface NBStickerProps {
-  text: string;
+  text?: string;
+  children?: React.ReactNode;
   color?: "yellow" | "pink" | "blue" | "green" | "red" | "purple";
-  rotation?: "-2deg" | "2deg" | "-3deg" | "3deg";
+  rotation?: string;
+  rotate?: string;
   className?: string;
 }
 
 export const NBSticker: React.FC<NBStickerProps> = ({
   text,
+  children,
   color = "yellow",
   rotation = "-2deg",
+  rotate,
   className = "",
 }) => {
   const colorStyles = {
@@ -22,20 +26,20 @@ export const NBSticker: React.FC<NBStickerProps> = ({
     purple: "bg-nb-purple text-nb-ink",
   };
 
-  const rotationStyles = {
-    "-2deg": "-rotate-2",
-    "2deg": "rotate-2",
-    "-3deg": "-rotate-3",
-    "3deg": "rotate-3",
-  };
+  const rotationValue = rotate || rotation;
+  const rotationClass = rotationValue.includes("3deg")
+    ? rotationValue.startsWith("-") ? "-rotate-3" : "rotate-3"
+    : rotationValue.includes("1")
+      ? rotationValue.startsWith("-") ? "-rotate-1" : "rotate-1"
+      : rotationValue.startsWith("-") ? "-rotate-2" : "rotate-2";
 
   return (
     <div
       className={`inline-block font-heading uppercase font-black text-xs px-2.5 py-1 border-[3px] border-nb-ink shadow-[3px_3px_0px_#0A0A0A] select-none tracking-widest ${
-        rotationStyles[rotation]
+        rotationClass
       } ${colorStyles[color]} ${className}`}
     >
-      ★ {text}
+      {children ?? `★ ${text ?? ""}`}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { SubjectInput } from "./engine";
+export { useFloorStore } from "./floorStore";
 
 export interface AttendanceStoreState {
   sectionId: string;
