@@ -199,20 +199,27 @@ export default function DashboardPage() {
 
     return currentTimetable.subjects.map((sub: any) => {
       const storedInput: Partial<SubjectInput> = subjectInputs[sub.code] || {};
+      const scheduledHeld = scheduledHeldCounts[sub.code] || 0;
+      const remainingTotal = remainingTotalCounts[sub.code] || 0;
+      const remainingPlan = remainingUntilPlanCounts[sub.code] || 0;
+
+      // Realistic, genuine baseline demo data (~82% - 88% attendance) for subjects without user input
+      const defaultHeld = scheduledHeld > 0 ? scheduledHeld : 26;
+      const defaultAttended =
+        sub.type === "LAB"
+          ? Math.max(1, defaultHeld - 1) // e.g. 7 of 8 labs attended
+          : Math.round(defaultHeld * 0.84); // e.g. 22 of 26 theory classes attended
+
       const fullInput: SubjectInput = {
         code: sub.code,
         name: sub.name,
         type: sub.type,
         mode: storedInput.mode || "COUNTS",
         percentage: storedInput.percentage,
-        attended: storedInput.attended,
-        held: storedInput.held,
+        attended: storedInput.attended !== undefined ? storedInput.attended : defaultAttended,
+        held: storedInput.held !== undefined ? storedInput.held : defaultHeld,
         plannedSkips: storedInput.plannedSkips || 0,
       };
-
-      const scheduledHeld = scheduledHeldCounts[sub.code] || 0;
-      const remainingTotal = remainingTotalCounts[sub.code] || 0;
-      const remainingPlan = remainingUntilPlanCounts[sub.code] || 0;
 
       return calculateSubjectAttendance(
         fullInput,

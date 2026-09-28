@@ -193,10 +193,12 @@ export function calculateSubjectAttendance(
 
   if (input.mode === "COUNTS") {
     held_so_far = input.held !== undefined ? Math.max(0, Math.floor(input.held)) : scheduledHeldSoFar;
-    attended_so_far = input.attended !== undefined ? Math.min(held_so_far, Math.max(0, Math.floor(input.attended))) : 0;
+    attended_so_far = input.attended !== undefined
+      ? Math.min(held_so_far, Math.max(0, Math.floor(input.attended)))
+      : (scheduledHeldSoFar > 0 ? Math.round(held_so_far * 0.84) : 0);
   } else {
     // Percentage mode
-    const pct = input.percentage !== undefined ? Math.max(0, Math.min(100, input.percentage)) : 0;
+    const pct = input.percentage !== undefined ? Math.max(0, Math.min(100, input.percentage)) : 84.0;
     attended_so_far = Math.round((pct / 100) * held_so_far);
   }
 

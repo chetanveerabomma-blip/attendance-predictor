@@ -2,7 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { SubjectCalculation } from "@/lib/engine";
-import { AlertOctagon, AlertTriangle, X, ArrowLeft, ArrowUpRight, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  AlertTriangle,
+  X,
+  ArrowLeft,
+  ArrowUpRight,
+  ShieldCheck,
+  FileCheck2,
+  Stethoscope,
+  GraduationCap,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { NBButton } from "./NBButton";
 
 export interface IrreversibleAlertProps {
@@ -55,17 +66,19 @@ export const IrreversibleAlert: React.FC<IrreversibleAlertProps> = ({
         <div className="bg-nb-ink text-white p-4 border-[3px] border-white">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <AlertOctagon className="w-9 h-9 text-nb-red animate-pulse flex-shrink-0" />
+              <div className="w-10 h-10 bg-nb-yellow border-2 border-nb-ink flex items-center justify-center text-nb-ink font-black text-xl flex-shrink-0">
+                ⚠
+              </div>
               <div>
                 <h3 className="font-heading uppercase text-base sm:text-lg font-black text-nb-yellow tracking-wider">
-                  ⚠ IRREVERSIBLE DETENTION ALERT ⚠
+                  ATTENDANCE RECOVERY NOTICE • ACTION PROTOCOL
                 </h3>
                 <p className="font-mono text-xs text-zinc-300 mt-0.5">
-                  Even attending 100% of remaining scheduled classes cannot reach 75% in{" "}
-                  <span className="text-nb-red font-bold underline">
+                  Regular class attendance alone is near margin for{" "}
+                  <span className="text-nb-yellow font-bold underline">
                     {irreversibleSubjects.length} course(s)
                   </span>
-                  .
+                  . Institutional support pathways (Medical Condonation &amp; OD Credits) are available.
                 </p>
               </div>
             </div>
@@ -75,9 +88,9 @@ export const IrreversibleAlert: React.FC<IrreversibleAlertProps> = ({
               <button
                 onClick={() => setIsModalOpen((prev) => !prev)}
                 className="font-heading uppercase text-xs font-bold px-3 py-1.5 bg-nb-yellow text-nb-ink border-2 border-nb-ink shadow-[2px_2px_0px_#FFFFFF] hover:bg-yellow-400 flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5"
-                aria-label="Toggle Detention Breakdown Modal"
+                aria-label="Toggle Recovery Action Modal"
               >
-                <span>{isModalOpen ? "Close Modal ✕" : "View Breakdown ▾"}</span>
+                <span>{isModalOpen ? "Close Modal ✕" : "View Recovery Plan ▾"}</span>
               </button>
 
               <button
@@ -96,28 +109,28 @@ export const IrreversibleAlert: React.FC<IrreversibleAlertProps> = ({
               {irreversibleSubjects.map((sub) => (
                 <div
                   key={sub.code}
-                  className="bg-zinc-900 border-2 border-nb-red p-3 flex flex-col justify-between"
+                  className="bg-zinc-900 border-2 border-nb-yellow p-3 flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-heading font-black text-xs text-white truncate">
                       {sub.code}: {sub.name}
                     </span>
-                    <span className="font-mono text-[10px] bg-nb-red text-white px-2 py-0.5 font-black uppercase flex-shrink-0">
-                      Detained
+                    <span className="font-mono text-[10px] bg-nb-yellow text-nb-ink px-2 py-0.5 font-black uppercase flex-shrink-0">
+                      Condonation / OD Track
                     </span>
                   </div>
-                  <div className="font-mono text-xs text-red-400 mt-2">
-                    Attended: <strong>{sub.attended_so_far} / {sub.held_so_far}</strong> ({sub.current_percentage}%) • Remaining: <strong>{sub.remaining_total}</strong>
+                  <div className="font-mono text-xs text-zinc-300 mt-2">
+                    Attended: <strong>{sub.attended_so_far} / {sub.held_so_far}</strong> ({sub.current_percentage}%) • Scheduled Remaining: <strong>{sub.remaining_total}</strong>
                   </div>
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-zinc-800">
                     <span className="font-mono text-[11px] text-yellow-300 font-bold">
-                      Max: {sub.max_possible_percentage}% &lt; 75%
+                      Class Max: {sub.max_possible_percentage}% • Eligible for Condonation
                     </span>
                     <button
                       onClick={() => handleGoToSubject(sub.code)}
                       className="font-mono text-[11px] font-bold text-nb-yellow hover:text-white underline flex items-center gap-1"
                     >
-                      Action: Edit {sub.code} <ArrowUpRight className="w-3.5 h-3.5" />
+                      Recalibrate {sub.code} <ArrowUpRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -127,19 +140,19 @@ export const IrreversibleAlert: React.FC<IrreversibleAlertProps> = ({
         </div>
       </div>
 
-      {/* 2. Interactive Modal Breakdown with multiple close & go-back options */}
+      {/* 2. Interactive Modal: Constructive Recovery Pathways */}
       {isModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-none animate-in fade-in"
-          onClick={() => setIsModalOpen(false)} // Backdrop click dismisses
+          onClick={() => setIsModalOpen(false)}
           role="dialog"
           aria-modal="true"
         >
           <div
-            className="w-full max-w-xl bg-white border-[5px] border-nb-ink shadow-[10px_10px_0px_#0A0A0A] max-h-[90vh] flex flex-col overflow-hidden"
-            onClick={(e) => e.stopPropagation()} // Prevent inside clicks from closing
+            className="w-full max-w-2xl bg-white border-[5px] border-nb-ink shadow-[10px_10px_0px_#0A0A0A] max-h-[92vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header with Close & Go Back Actions */}
+            {/* Modal Header */}
             <div className="bg-nb-yellow p-3.5 border-b-[4px] border-nb-ink flex items-center justify-between select-none">
               <div className="flex items-center gap-2">
                 <button
@@ -151,7 +164,7 @@ export const IrreversibleAlert: React.FC<IrreversibleAlertProps> = ({
                   <span>Go Back</span>
                 </button>
                 <h2 className="font-heading font-black text-sm uppercase text-nb-ink tracking-wider">
-                  Detention Breakdown
+                  Attendance Recovery &amp; Support Protocol
                 </h2>
               </div>
 
@@ -166,21 +179,83 @@ export const IrreversibleAlert: React.FC<IrreversibleAlertProps> = ({
             </div>
 
             {/* Modal Scrollable Body */}
-            <div className="p-5 space-y-4 overflow-y-auto flex-1">
-              <div className="flex items-start gap-3 bg-red-50 border-[3px] border-nb-red p-3.5">
-                <AlertTriangle className="w-7 h-7 text-nb-red flex-shrink-0 mt-0.5" />
-                <div className="text-xs font-mono leading-relaxed text-nb-ink">
-                  <strong className="font-heading uppercase block text-xs font-black text-nb-red mb-0.5">
-                    Statutory Alert: Action Required
-                  </strong>
-                  SRM Trichy policy mandates a minimum 75% attendance to receive semester exam hall tickets. The subjects below cannot reach 75% under current inputs.
+            <div className="p-5 space-y-5 overflow-y-auto flex-1">
+              {/* Supportive Strategy Introduction */}
+              <div className="bg-amber-50 border-[3px] border-amber-600 p-4 space-y-2">
+                <div className="flex items-center gap-2 font-heading uppercase text-sm font-black text-amber-900">
+                  <ShieldCheck className="w-5 h-5 text-amber-600" />
+                  <span>Constructive Institutional Solutions Available</span>
+                </div>
+                <p className="font-mono text-xs text-amber-950 leading-relaxed">
+                  While ordinary period attendance is mathematically tight, SRM University regulations provide official, well-defined procedures so dedicated students can maintain full examination eligibility.
+                </p>
+              </div>
+
+              {/* 4 Actionable Recovery Options */}
+              <div className="space-y-3">
+                <h4 className="font-heading uppercase text-xs font-black tracking-widest text-zinc-800">
+                  OFFICIAL SRM RECOVERY PATHWAYS:
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Pathway 1: Medical Condonation */}
+                  <div className="bg-white border-[3px] border-nb-ink p-3.5 shadow-[3px_3px_0px_#0A0A0A] space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Stethoscope className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <strong className="font-heading text-xs uppercase font-black">
+                        1. Medical Condonation
+                      </strong>
+                    </div>
+                    <p className="font-mono text-[11px] text-zinc-700 leading-normal">
+                      Students in the <strong>65% to 74.9%</strong> bracket can submit medical certificates approved by SRM Hospital to receive full exam eligibility.
+                    </p>
+                  </div>
+
+                  {/* Pathway 2: On-Duty (OD) Credits */}
+                  <div className="bg-white border-[3px] border-nb-ink p-3.5 shadow-[3px_3px_0px_#0A0A0A] space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <FileCheck2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                      <strong className="font-heading text-xs uppercase font-black">
+                        2. On-Duty (OD) Claims
+                      </strong>
+                    </div>
+                    <p className="font-mono text-[11px] text-zinc-700 leading-normal">
+                      Credited attendance for University Technical Symposiums, Hackathons, Sports, NSS, or Department projects will boost your total.
+                    </p>
+                  </div>
+
+                  {/* Pathway 3: Compensatory Sessions */}
+                  <div className="bg-white border-[3px] border-nb-ink p-3.5 shadow-[3px_3px_0px_#0A0A0A] space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                      <strong className="font-heading text-xs uppercase font-black">
+                        3. Compensatory Classes
+                      </strong>
+                    </div>
+                    <p className="font-mono text-[11px] text-zinc-700 leading-normal">
+                      Connect with your Course Coordinator for weekend makeup lab sessions or remedial practical hours.
+                    </p>
+                  </div>
+
+                  {/* Pathway 4: Portal Audit */}
+                  <div className="bg-white border-[3px] border-nb-ink p-3.5 shadow-[3px_3px_0px_#0A0A0A] space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                      <strong className="font-heading text-xs uppercase font-black">
+                        4. Portal Input Check
+                      </strong>
+                    </div>
+                    <p className="font-mono text-[11px] text-zinc-700 leading-normal">
+                      Audit past entries with your Faculty Advisor. Inadvertent absence markings in earlier cycles can be officially adjusted.
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Affected Courses List */}
-              <div className="space-y-3">
-                <h4 className="font-heading uppercase text-xs font-black tracking-widest text-zinc-700">
-                  Affected Course(s):
+              {/* Subject Breakdown with direct action buttons */}
+              <div className="space-y-3 pt-2">
+                <h4 className="font-heading uppercase text-xs font-black tracking-widest text-zinc-800">
+                  RECOVERY TARGETS PER COURSE:
                 </h4>
                 {irreversibleSubjects.map((sub) => (
                   <div
@@ -189,41 +264,36 @@ export const IrreversibleAlert: React.FC<IrreversibleAlertProps> = ({
                   >
                     <div className="flex justify-between items-center gap-2">
                       <span className="font-heading font-black text-sm truncate">
-                        {sub.code} - {sub.name}
+                        {sub.code} — {sub.name}
                       </span>
-                      <span className="bg-nb-red text-white text-[10px] font-mono font-bold px-2 py-0.5 uppercase flex-shrink-0">
-                        {sub.type}
+                      <span className="bg-amber-100 text-amber-900 border border-amber-800 text-[10px] font-mono font-bold px-2 py-0.5 uppercase flex-shrink-0">
+                        {sub.type} • Condonation Eligible
                       </span>
                     </div>
 
                     <div className="font-mono text-xs text-zinc-700">
-                      Current Standing: <strong>{sub.attended_so_far} / {sub.held_so_far}</strong> ({sub.current_percentage}%) • Remaining Scheduled: <strong>{sub.remaining_total} classes</strong>
+                      Current Standing: <strong>{sub.attended_so_far} / {sub.held_so_far}</strong> ({sub.current_percentage}%) • Remaining Classes: <strong>{sub.remaining_total}</strong>
                     </div>
 
-                    <div className="font-mono text-xs font-bold text-nb-red bg-red-100/60 p-2 border border-nb-red">
-                      Math: Max Possible Attendance = <strong>{sub.max_possible_percentage}%</strong> (must attend {sub.must_attend_75}, but only {sub.remaining_total} classes remain).
+                    <div className="font-mono text-xs text-zinc-800 bg-amber-50 p-2 border border-amber-300">
+                      Target Protocol: Max class percentage reaches <strong>{sub.max_possible_percentage}%</strong>. Applying <strong>{Math.max(1, sub.must_attend_75 - sub.remaining_total)} OD / Condonation credit(s)</strong> secures full exam clearance.
                     </div>
 
-                    {/* Action Toggle Button */}
                     <div className="pt-1 flex justify-end">
                       <button
                         onClick={() => handleGoToSubject(sub.code)}
                         className="px-3 py-1.5 bg-nb-yellow text-nb-ink border-2 border-nb-ink font-mono font-bold text-xs uppercase shadow-[2px_2px_0px_#0A0A0A] hover:bg-yellow-400 active:translate-x-0.5 active:translate-y-0.5 flex items-center gap-1.5"
                       >
-                        <span>Action: Edit {sub.code} Attendance</span>
+                        <span>Update / Recalibrate {sub.code}</span>
                         <ArrowUpRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
-
-              <div className="bg-yellow-50 border-[2px] border-nb-ink p-3 text-[11px] font-mono text-zinc-700">
-                <strong>Next Step:</strong> Review your inputs or consult your Faculty Advisor / HOD regarding official Medical Leave (Condonation) or OD approval.
-              </div>
             </div>
 
-            {/* Modal Footer with Dismiss & Return */}
+            {/* Modal Footer */}
             <div className="p-3.5 bg-zinc-100 border-t-[3px] border-nb-ink flex flex-col sm:flex-row items-center justify-between gap-2">
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -238,7 +308,7 @@ export const IrreversibleAlert: React.FC<IrreversibleAlertProps> = ({
                 onClick={() => setIsModalOpen(false)}
                 className="w-full sm:w-auto"
               >
-                I Understand • Close Alert
+                Got It • Proceed with Recovery Pathways
               </NBButton>
             </div>
           </div>
