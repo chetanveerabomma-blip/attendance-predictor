@@ -84,7 +84,7 @@ function RoomsPageContent() {
     activeFloor: "ALL",
     isExploded: false,
     isCutaway: false,
-    cameraMode: "orthographic",
+    cameraMode: "perspective",
     isPlayingTimeLapse: false,
     timeLapseSpeed: 1,
   });

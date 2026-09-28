@@ -17,6 +17,7 @@ interface RoomBlockProps {
   isDimmed: boolean;
   isCutaway: boolean;
   pulseHighlight?: boolean;
+  showLabel?: boolean;
   onSelect: (roomId: string) => void;
   onHover: (roomId: string | null) => void;
 }
@@ -30,12 +31,19 @@ export const RoomBlock: React.FC<RoomBlockProps> = ({
   isDimmed,
   isCutaway,
   pulseHighlight,
+  showLabel,
   onSelect,
   onHover,
 }) => {
   const { roomId, label, x, z, w, d } = roomPos;
   const status = statusData?.status || "FREE";
   const isClaimed = Boolean(claimData);
+
+  // Determine if sticker billboard should render
+  const shouldRenderLabel =
+    showLabel !== undefined
+      ? showLabel || isSelected || isHovered || isClaimed || Boolean(pulseHighlight)
+      : isSelected || isHovered || isClaimed || Boolean(pulseHighlight);
 
   // Status Color Mapping (Neobrutalism Palette)
   const roomColor = useMemo(() => {
@@ -78,7 +86,12 @@ export const RoomBlock: React.FC<RoomBlockProps> = ({
         ]}
       >
         <boxGeometry args={[w, 0.2, d]} />
-        <meshBasicMaterial color="#0A0A0A" />
+        <meshBasicMaterial
+          color="#0A0A0A"
+          polygonOffset
+          polygonOffsetFactor={2}
+          polygonOffsetUnits={2}
+        />
       </mesh>
 
       {/* 2. Main Room Geometry */}
@@ -98,11 +111,16 @@ export const RoomBlock: React.FC<RoomBlockProps> = ({
         }}
       >
         <boxGeometry args={[w, currentHeight, d]} />
-        <meshBasicMaterial color={roomColor} />
+        <meshBasicMaterial
+          color={roomColor}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
         {/* Thick black outline */}
         <Edges
           linewidth={isSelected ? 4 : 2.5}
-          scale={1}
+          scale={1.002}
           threshold={15}
           color="#0A0A0A"
         />
@@ -130,60 +148,61 @@ export const RoomBlock: React.FC<RoomBlockProps> = ({
           <mesh position={[0.5, 1.2, 0]}>
             <boxGeometry args={[0.9, 0.6, 0.05]} />
             <meshBasicMaterial color="#FF6B9D" />
-            <Edges linewidth={2} color="#0A0A0A" />
+            <Edges linewidth={2} scale={1.002} color="#0A0A0A" />
           </mesh>
         </group>
       )}
 
       {/* 5. Neobrutalist Sticker Billboard Label */}
-      <Html
-        position={[0, currentHeight + liftY + (isClaimed ? 1.6 : 0.4), 0]}
-        center
-        distanceFactor={38}
-        zIndexRange={[10, 0]}
-        className="pointer-events-none select-none"
-      >
-        <div
-          className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] border-2 border-black font-mono text-[11px] font-black uppercase shadow-[2px_2px_0px_#0A0A0A] whitespace-nowrap transition-all duration-150 ${
-            isSelected
-              ? "bg-[#FFD93D] text-black scale-110 ring-2 ring-black"
-              : isHovered
-              ? "bg-white text-black scale-105"
-              : isClaimed
-              ? "bg-[#4D96FF] text-white"
-              : "bg-white text-black opacity-90"
-          } ${pulseHighlight ? "animate-bounce" : ""}`}
+      {shouldRenderLabel && (
+        <Html
+          position={[0, currentHeight + liftY + (isClaimed ? 1.6 : 0.4), 0]}
+          center
+          zIndexRange={[100, 0]}
+          className="pointer-events-none select-none"
         >
-          {isClaimed ? (
-            <span className="flex items-center gap-1 text-[10px]">
-              <Flag size={11} className="text-yellow-300" />
-              {label || roomId} ({claimData?.squadSize || 2}👥)
-            </span>
-          ) : (
-            <span>{label || roomId}</span>
-          )}
+          <div
+            className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] border-2 border-black font-mono text-[11px] font-black uppercase shadow-[2px_2px_0px_#0A0A0A] whitespace-nowrap transition-all duration-150 ${
+              isSelected
+                ? "bg-[#FFD93D] text-black scale-110 ring-2 ring-black"
+                : isHovered
+                ? "bg-white text-black scale-105"
+                : isClaimed
+                ? "bg-[#4D96FF] text-white"
+                : "bg-white text-black opacity-90"
+            } ${pulseHighlight ? "animate-bounce" : ""}`}
+          >
+            {isClaimed ? (
+              <span className="flex items-center gap-1 text-[10px]">
+                <Flag size={11} className="text-yellow-300" />
+                {label || roomId} ({claimData?.squadSize || 2}👥)
+              </span>
+            ) : (
+              <span>{label || roomId}</span>
+            )}
 
-          {status === "CLOSED" && <Lock size={10} className="text-white" />}
-          {status === "FREE_SOON" && <Clock size={10} className="text-amber-800" />}
+            {status === "CLOSED" && <Lock size={10} className="text-white" />}
+            {status === "FREE_SOON" && <Clock size={10} className="text-amber-800" />}
 
-          {/* Hover status hint */}
-          {isHovered && !isClaimed && (
-            <span
-              className={`text-[9px] px-1 py-0.2 rounded border border-black ${
-                status === "FREE"
-                  ? "bg-[#6BCB77] text-black"
-                  : status === "FREE_SOON"
-                  ? "bg-[#FFD93D] text-black"
-                  : status === "OCCUPIED"
-                  ? "bg-[#FF3B30] text-white"
-                  : "bg-gray-200 text-black"
-              }`}
-            >
-              {status === "FREE" && freeMinutes > 0 ? `${freeMinutes}m` : status}
-            </span>
-          )}
-        </div>
-      </Html>
+            {/* Hover status hint */}
+            {isHovered && !isClaimed && (
+              <span
+                className={`text-[9px] px-1 py-0.2 rounded border border-black ${
+                  status === "FREE"
+                    ? "bg-[#6BCB77] text-black"
+                    : status === "FREE_SOON"
+                    ? "bg-[#FFD93D] text-black"
+                    : status === "OCCUPIED"
+                    ? "bg-[#FF3B30] text-white"
+                    : "bg-gray-200 text-black"
+                }`}
+              >
+                {status === "FREE" && freeMinutes > 0 ? `${freeMinutes}m` : status}
+              </span>
+            )}
+          </div>
+        </Html>
+      )}
     </group>
   );
 };

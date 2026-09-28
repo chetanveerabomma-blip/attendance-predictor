@@ -27,15 +27,15 @@ interface BuildingSceneProps {
 
 function ResponsiveOrthographicCamera() {
   const { width, height } = useThree((state) => state.size);
-  const zoom = Math.max(3, Math.min(12, height / 90, width / 62));
+  const zoom = Math.max(10, Math.min(26, height / 32, width / 26));
 
   return (
     <OrthographicCamera
       makeDefault
       zoom={zoom}
-      position={[45, 45, 45]}
-      near={-100}
-      far={500}
+      position={[55, 48, 55]}
+      near={0.1}
+      far={1000}
     />
   );
 }
@@ -84,17 +84,22 @@ export const BuildingScene: React.FC<BuildingSceneProps> = ({
       }
     } else {
       // Reset to overview
-      controls.setLookAt(45, 45, 45, 0, 12, 0, true);
+      controls.setLookAt(55, 48, 55, 0, 12, 0, true);
     }
   }, [viewState.selectedRoomId, layoutData, viewState.isExploded]);
 
   return (
     <div className="relative w-full h-[600px] lg:h-[750px] bg-[#FFF8E7] border-[3px] border-black rounded-[4px] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden select-none">
       <Canvas
-        frameloop="demand"
+        frameloop="always"
         shadows={false}
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, alpha: false }}
+        dpr={[1, 2]}
+        gl={{
+          antialias: true,
+          alpha: false,
+          powerPreference: "high-performance",
+          logarithmicDepthBuffer: true,
+        }}
         onPointerDown={(e) => {
           // If clicked canvas background, deselect
           if ((e.target as HTMLElement).tagName === "CANVAS") {
@@ -110,8 +115,8 @@ export const BuildingScene: React.FC<BuildingSceneProps> = ({
         ) : (
           <PerspectiveCamera
             makeDefault
-            fov={40}
-            position={[45, 45, 45]}
+            fov={36}
+            position={[55, 48, 55]}
             near={0.1}
             far={1000}
           />
@@ -120,7 +125,7 @@ export const BuildingScene: React.FC<BuildingSceneProps> = ({
         {/* CameraControls for smooth damped orbiting and flying */}
         <CameraControls
           ref={cameraControlsRef}
-          smoothTime={0.4}
+          smoothTime={0.25}
           dollySpeed={0.8}
           truckSpeed={0.8}
           minDistance={10}

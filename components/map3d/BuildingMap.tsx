@@ -88,6 +88,17 @@ export const BuildingMap: React.FC<BuildingMapProps> = ({
               // Position offset for Annex
               const posX = floorNum === null ? 34 + roomPos.x : roomPos.x;
 
+              // Only render label if isolated, exploded, selected, hovered, claimed, pulsing, or top floor
+              const showLabel =
+                isIsolated ||
+                isExploded ||
+                isSelected ||
+                isHovered ||
+                Boolean(claimData) ||
+                shouldPulse ||
+                floorNum === 6 ||
+                floorNum === null;
+
               return (
                 <RoomBlock
                   key={rId}
@@ -99,6 +110,7 @@ export const BuildingMap: React.FC<BuildingMapProps> = ({
                   isDimmed={isDimmed}
                   isCutaway={isCutaway}
                   pulseHighlight={shouldPulse}
+                  showLabel={showLabel}
                   onSelect={onSelectRoom}
                   onHover={onHoverRoom}
                 />
