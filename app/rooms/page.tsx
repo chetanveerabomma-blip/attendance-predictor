@@ -69,7 +69,8 @@ function RoomsPageContent() {
     setLiveTime,
   } = useFloorStore();
 
-  const { currentDateStr, currentTimeShort } = useClockStore();
+  const currentDateStr = useClockStore((state) => state.currentDateStr);
+  const currentTimeShort = useClockStore((state) => state.currentTimeShort);
   const liveClockInitialized = useRef(false);
 
   // Active view tab: MAP | GRID | TIMELINE | FINDER
@@ -267,7 +268,7 @@ function RoomsPageContent() {
 
           {/* Floating Room Panel when room is selected */}
           {selectedStatusData && (
-            <div className="absolute inset-x-3 top-20 bottom-20 z-30 overflow-y-auto sm:inset-x-auto sm:top-4 sm:right-4 sm:bottom-auto sm:overflow-visible">
+            <div className="absolute bottom-20 left-14 right-3 z-30 max-h-[45%] overflow-y-auto sm:top-4 sm:bottom-auto sm:left-auto sm:right-4 sm:w-[420px] sm:max-h-[90vh] sm:overflow-visible">
               <RoomPanel
                 statusData={selectedStatusData}
                 selectedTime={selectedTime}

@@ -6,8 +6,6 @@ import {
   CameraControls,
   OrthographicCamera,
   PerspectiveCamera,
-  AdaptiveDpr,
-  PerformanceMonitor,
 } from "@react-three/drei";
 import { BuildingMap } from "./BuildingMap";
 import { BuildingLayoutData } from "@/lib/layout/types";
@@ -28,8 +26,8 @@ interface BuildingSceneProps {
 }
 
 function ResponsiveOrthographicCamera() {
-  const canvasWidth = useThree((state) => state.size.width);
-  const zoom = Math.max(4, Math.min(15, canvasWidth / 80));
+  const { width, height } = useThree((state) => state.size);
+  const zoom = Math.max(3, Math.min(12, height / 90, width / 62));
 
   return (
     <OrthographicCamera
@@ -95,7 +93,7 @@ export const BuildingScene: React.FC<BuildingSceneProps> = ({
       <Canvas
         frameloop="demand"
         shadows={false}
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
         gl={{ antialias: true, alpha: false }}
         onPointerDown={(e) => {
           // If clicked canvas background, deselect
@@ -155,8 +153,6 @@ export const BuildingScene: React.FC<BuildingSceneProps> = ({
           onSelectFloor={onSelectFloor}
         />
 
-        <AdaptiveDpr pixelated />
-        <PerformanceMonitor />
       </Canvas>
     </div>
   );
