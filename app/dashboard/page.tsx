@@ -6,12 +6,15 @@ import { useAttendanceStore } from "@/lib/store";
 import {
   calculateSubjectAttendance,
   calculateOverallAttendance,
+  simulateLeave,
   SubjectCalculation,
   SubjectInput,
+  LeaveInput,
   SEMESTER_START,
   SEMESTER_END,
 } from "@/lib/engine";
 import { countClassesBetweenDates, getWorkingDaysCount, Holiday } from "@/lib/dates";
+import { DEFAULT_POLICY } from "@/config/policy";
 import { KPIStrip } from "@/components/dashboard/KPIStrip";
 import { SubjectCard } from "@/components/dashboard/SubjectCard";
 import { AttendanceProjectionChart } from "@/components/dashboard/AttendanceProjectionChart";
@@ -21,8 +24,15 @@ import { SnapshotsView } from "@/components/dashboard/SnapshotsView";
 import { IrreversibleAlert } from "@/components/nb/IrreversibleAlert";
 import { NBTabs } from "@/components/nb/NBTabs";
 import { NBButton } from "@/components/nb/NBButton";
-import { NBSticker } from "@/components/nb/NBSticker";
-import { NBBadge } from "@/components/nb/NBBadge";
+import { HealthGauge } from "@/components/charts/HealthGauge";
+import { SubjectComparisonBars } from "@/components/charts/SubjectComparisonBars";
+import { ClassesBudgetDonut } from "@/components/charts/ClassesBudgetDonut";
+import { WeeklyHeatmap } from "@/components/charts/WeeklyHeatmap";
+import { RiskLeaderboard } from "@/components/charts/RiskLeaderboard";
+import { LeaveList } from "@/components/leaves/LeaveList";
+import { LeaveModal } from "@/components/leaves/LeaveModal";
+import { BeforeAfterCard } from "@/components/leaves/BeforeAfterCard";
+import { FloatingAdvisor } from "@/components/advisor/FloatingAdvisor";
 import {
   Calendar,
   Lock,
@@ -58,9 +68,22 @@ export default function DashboardPage() {
   const [timetablesData, setTimetablesData] = useState<Record<string, any>>({});
   const [holidaysData, setHolidaysData] = useState<Holiday[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("cards");
+  const [activeTab, setActiveTab] = useState("overview");
 
-  // Load section timetable data
+  // Phase 2 Leave Simulator State
+  const [simulatedLeaves, setSimulatedLeaves] = useState<LeaveInput[]>([
+    {
+      id: "demo-od-1",
+      type: "OD",
+      startDate: "2026-10-05",
+      endDate: "2026-10-06",
+      scope: "ALL",
+      note: "SRM National Technical Symposium",
+    },
+  ]);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+
+  // Load section timetable data & saved leaves
   useEffect(() => {
     async function loadData() {
       try {
@@ -70,8 +93,16 @@ export default function DashboardPage() {
           setTimetablesData(data.timetables || {});
           setHolidaysData(data.holidays || []);
         }
+
+        const leavesRes = await fetch("/api/leaves");
+        if (leavesRes.ok) {
+          const leavesJson = await leavesRes.json();
+          if (leavesJson.leaves && leavesJson.leaves.length > 0) {
+            setSimulatedLeaves(leavesJson.leaves);
+          }
+        }
       } catch (err) {
-        console.error("Failed to load sections API:", err);
+        console.error("Failed to load dashboard data:", err);
       } finally {
         setLoading(false);
       }
@@ -86,13 +117,9 @@ export default function DashboardPage() {
     }
   }, [session, sectionId, setSectionId]);
 
-  // Current timetable object
   const currentTimetable = timetablesData[sectionId] || null;
-
-  // Active holidays list
   const activeHolidays = includeHolidays ? holidaysData : [];
 
-  // Subject Type Map for Lab Block calculations
   const subjectTypeMap = useMemo(() => {
     const map: Record<string, "THEORY" | "LAB"> = {};
     if (currentTimetable?.subjects) {
@@ -103,10 +130,9 @@ export default function DashboardPage() {
     return map;
   }, [currentTimetable]);
 
-  // Classes held so far: from SEMESTER_START (2026-08-29) up to yesterday (or today if todayClassesDone is true)
   const scheduledHeldCounts = useMemo(() => {
     if (!currentTimetable) return {};
-    const effectiveEndDate = todayClassesDone ? todayDate : "2026-09-27"; // yesterday relative to 2026-09-28
+    const effectiveEndDate = todayClassesDone ? todayDate : "2026-09-27";
     return countClassesBetweenDates(
       SEMESTER_START,
       effectiveEndDate,
@@ -118,7 +144,6 @@ export default function DashboardPage() {
     );
   }, [currentTimetable, todayClassesDone, todayDate, activeHolidays, labCountingMode, subjectTypeMap]);
 
-  // Remaining classes from tomorrow (or today if not done) until semester end
   const remainingTotalCounts = useMemo(() => {
     if (!currentTimetable) return {};
     const effectiveStartDate = todayClassesDone ? "2026-09-29" : todayDate;
@@ -133,7 +158,6 @@ export default function DashboardPage() {
     );
   }, [currentTimetable, todayClassesDone, todayDate, activeHolidays, labCountingMode, subjectTypeMap]);
 
-  // Remaining until planningDate
   const remainingUntilPlanCounts = useMemo(() => {
     if (!currentTimetable) return {};
     const effectiveStartDate = todayClassesDone ? "2026-09-29" : todayDate;
@@ -148,7 +172,6 @@ export default function DashboardPage() {
     );
   }, [currentTimetable, todayClassesDone, todayDate, planningDate, activeHolidays, labCountingMode, subjectTypeMap]);
 
-  // Calendar metrics
   const daysLeft = Math.max(0, differenceInCalendarDays(parseISO(SEMESTER_END), parseISO(todayDate)));
   const workingDaysLeft = getWorkingDaysCount(todayDate, SEMESTER_END, activeHolidays);
   const weeksRemaining = Math.max(1, Math.ceil(daysLeft / 7));
@@ -191,13 +214,57 @@ export default function DashboardPage() {
     weeksRemaining,
   ]);
 
-  // Overall aggregate calculation
   const overallCalc = useMemo(() => {
     return calculateOverallAttendance(subjectCalculations);
   }, [subjectCalculations]);
 
-  const handleUpdatePlannedSkip = (code: string, skips: number) => {
-    setSubjectInput(code, { plannedSkips: skips });
+  // Leave Simulation results per subject
+  const leaveSimulations = useMemo(() => {
+    if (!currentTimetable?.week || simulatedLeaves.length === 0) return [];
+
+    return subjectCalculations.map((sub) => {
+      // Simulate collective leaves
+      let currentSub = sub;
+      let lastSim: any = null;
+      for (const leave of simulatedLeaves) {
+        lastSim = simulateLeave(
+          currentSub,
+          leave,
+          currentTimetable.week || {},
+          activeHolidays,
+          currentTimetable.dayOrderOverrides || [],
+          todayDate,
+          DEFAULT_POLICY
+        );
+      }
+      return lastSim;
+    }).filter(Boolean);
+  }, [subjectCalculations, simulatedLeaves, currentTimetable, activeHolidays, todayDate]);
+
+  const handleAddLeave = async (leave: LeaveInput) => {
+    setSimulatedLeaves((prev) => [leave, ...prev]);
+    // Save to DB
+    try {
+      await fetch("/api/leaves", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(leave),
+      });
+    } catch {}
+  };
+
+  const handleRemoveLeave = async (id: string) => {
+    setSimulatedLeaves((prev) => prev.filter((l) => l.id !== id));
+    try {
+      await fetch(`/api/leaves?id=${id}`, { method: "DELETE" });
+    } catch {}
+  };
+
+  const handleClearAllLeaves = async () => {
+    setSimulatedLeaves([]);
+    try {
+      await fetch("/api/leaves?clearAll=true", { method: "DELETE" });
+    } catch {}
   };
 
   const handlePrint = () => {
@@ -213,7 +280,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 relative">
       {/* 1. Header & Controls Bar */}
       <div className="bg-white border-[3px] border-nb-ink p-5 shadow-[6px_6px_0px_#0A0A0A] space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-[2px] border-zinc-200 pb-4">
@@ -230,7 +297,7 @@ export default function DashboardPage() {
               ATTENDANCE PREDICTOR TERMINAL
             </h1>
             <p className="font-mono text-xs text-zinc-600">
-              Logged in as: <strong className="text-nb-ink">{session?.user?.name || "Student"}</strong> ({ (session?.user as any)?.regNo || "RA2611003010042"})
+              Student: <strong className="text-nb-ink">{session?.user?.name || "Student"}</strong> ({(session?.user as any)?.regNo || "RA2611003010042"})
             </p>
           </div>
 
@@ -248,7 +315,6 @@ export default function DashboardPage() {
 
         {/* Global Controls Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-1">
-          {/* 1. Section Dropdown */}
           <div className="space-y-1">
             <label className="block font-heading uppercase text-xs font-black text-zinc-700">
               Section Timetable:
@@ -279,7 +345,6 @@ export default function DashboardPage() {
             </select>
           </div>
 
-          {/* 2. Today's Date Locked Chip */}
           <div className="space-y-1">
             <label className="block font-heading uppercase text-xs font-black text-zinc-700">
               Today&apos;s Date (IST):
@@ -293,7 +358,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* 3. Planning Date Picker */}
           <div className="space-y-1">
             <label className="block font-heading uppercase text-xs font-black text-zinc-700">
               Plan Until:
@@ -308,7 +372,6 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* 4. Holiday & Today Done Toggles */}
           <div className="space-y-1.5 flex flex-col justify-center font-mono text-xs">
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
@@ -331,7 +394,6 @@ export default function DashboardPage() {
             </label>
           </div>
 
-          {/* 5. Lab Block Configuration */}
           <div className="space-y-1">
             <label className="block font-heading uppercase text-xs font-black text-zinc-700">
               Lab Count Policy:
@@ -362,7 +424,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 2. IRREVERSIBLE DETENTION ALERT (Pins above results + Modal on load) */}
+      {/* 2. IRREVERSIBLE DETENTION ALERT */}
       <IrreversibleAlert irreversibleSubjects={overallCalc.irreversible_subjects} />
 
       {/* 3. Top KPI Cards Strip */}
@@ -372,22 +434,22 @@ export default function DashboardPage() {
         workingDaysLeft={workingDaysLeft}
       />
 
-      {/* 4. Tab Navigation */}
+      {/* 4. Tab Navigation (Phase 2 additions: Overview | Health | Leaves | Plan | Snapshots) */}
       <div className="space-y-6">
         <NBTabs
           activeTab={activeTab}
           onChange={setActiveTab}
           tabs={[
-            { id: "cards", label: "Subject Cards", badge: subjectCalculations.length },
-            { id: "recovery", label: "Weekly Recovery Plan" },
-            { id: "chart", label: "Trajectory Forecast Chart" },
-            { id: "future", label: "Future Skip Simulator" },
-            { id: "snapshots", label: "Snapshots & History" },
+            { id: "overview", label: "Overview", badge: subjectCalculations.length },
+            { id: "health", label: "Health Charts" },
+            { id: "leaves", label: "Leave Simulator (OD & Medical)", badge: simulatedLeaves.length },
+            { id: "plan", label: "Recovery & Future Plan" },
+            { id: "snapshots", label: "Snapshots" },
           ]}
         />
 
-        {/* Tab 1: Subject Cards Grid */}
-        {activeTab === "cards" && (
+        {/* Tab 1: Overview */}
+        {activeTab === "overview" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {subjectCalculations.map((calc) => (
@@ -400,31 +462,79 @@ export default function DashboardPage() {
                 />
               ))}
             </div>
-          </div>
-        )}
 
-        {/* Tab 2: Recovery Plan */}
-        {activeTab === "recovery" && (
-          <RecoveryPlanView
-            subjects={subjectCalculations}
-            weeksRemaining={weeksRemaining}
-          />
-        )}
-
-        {/* Tab 3: Trajectory Line Chart */}
-        {activeTab === "chart" && (
-          <div className="space-y-6">
             <AttendanceProjectionChart subjects={subjectCalculations} />
           </div>
         )}
 
-        {/* Tab 4: Future Skip Simulator */}
-        {activeTab === "future" && (
-          <FutureSkipPlanner
-            subjects={subjectCalculations}
-            onUpdateSkip={handleUpdatePlannedSkip}
-            planningDate={planningDate}
-          />
+        {/* Tab 2: Health Charts */}
+        {activeTab === "health" && (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1">
+                <HealthGauge overall={overallCalc} />
+              </div>
+              <div className="lg:col-span-2">
+                <SubjectComparisonBars subjects={subjectCalculations} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ClassesBudgetDonut subjects={subjectCalculations} />
+              <RiskLeaderboard subjects={subjectCalculations} />
+            </div>
+
+            <WeeklyHeatmap
+              weekSchedule={currentTimetable?.week || {}}
+              holidays={activeHolidays}
+              leaves={simulatedLeaves}
+            />
+          </div>
+        )}
+
+        {/* Tab 3: Leaves Simulator */}
+        {activeTab === "leaves" && (
+          <div className="space-y-6">
+            <LeaveList
+              leaves={simulatedLeaves}
+              onRemoveLeave={handleRemoveLeave}
+              onClearAll={handleClearAllLeaves}
+              onOpenAddModal={() => setIsLeaveModalOpen(true)}
+            />
+
+            {leaveSimulations.length > 0 && (
+              <div className="space-y-3 pt-4">
+                <h3 className="font-heading uppercase font-black text-sm text-nb-ink tracking-wider">
+                  BEFORE vs. AFTER ATTENDANCE PROJECTIONS
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {leaveSimulations.map((sim) => (
+                    <BeforeAfterCard
+                      key={sim.subjectCode}
+                      simulation={sim}
+                      subjectName={subjectCalculations.find((s) => s.code === sim.subjectCode)?.name}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 4: Recovery & Future Plan */}
+        {activeTab === "plan" && (
+          <div className="space-y-8">
+            <RecoveryPlanView
+              subjects={subjectCalculations}
+              weeksRemaining={weeksRemaining}
+            />
+
+            <FutureSkipPlanner
+              subjects={subjectCalculations}
+              onUpdateSkip={(code, skips) => setSubjectInput(code, { plannedSkips: skips })}
+              planningDate={planningDate}
+            />
+          </div>
         )}
 
         {/* Tab 5: Snapshots View */}
@@ -437,6 +547,18 @@ export default function DashboardPage() {
           />
         )}
       </div>
+
+      {/* Leave Modal */}
+      <LeaveModal
+        isOpen={isLeaveModalOpen}
+        onClose={() => setIsLeaveModalOpen(false)}
+        onSaveLeave={handleAddLeave}
+        todayDate={todayDate}
+        subjectsList={subjectCalculations.map((s) => ({ code: s.code, name: s.name }))}
+      />
+
+      {/* Floating AI Advisor Chatbot */}
+      <FloatingAdvisor />
     </div>
   );
 }
