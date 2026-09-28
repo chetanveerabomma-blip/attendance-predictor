@@ -1,0 +1,72 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String     @id @default(cuid())
+  regNo        String     @unique
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         String     @default("STUDENT") // STUDENT | ADMIN
+  sectionId    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  section      Section?   @relation(fields: [sectionId], references: [id])
+  snapshots    Snapshot[]
+  auditLogs    AuditLog[]
+}
+
+model Section {
+  id        String    @id
+  year      Int       // 1, 2, 3, 4
+  branch    String    // ECE, ECE-DS, BME
+  label     String    // e.g. "Year II - ECE Section A"
+  users     User[]
+  subjects  Subject[]
+  createdAt DateTime  @default(now())
+}
+
+model Subject {
+  id                String   @id @default(cuid())
+  code              String
+  name              String
+  type              String   // THEORY | LAB
+  periodsPerSession Int      @default(1)
+  sectionId         String
+  section           Section  @relation(fields: [sectionId], references: [id])
+
+  @@unique([sectionId, code])
+}
+
+model Snapshot {
+  id           String   @id @default(cuid())
+  userId       String
+  date         String   // ISO string or YYYY-MM-DD
+  planningDate String
+  payload      String   // JSON payload of current subjects & calculations
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String
+  userId    String?
+  timestamp DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  regNo     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-color: #FFF8E7;
+  --ink-color: #0A0A0A;
+}
+
+body {
+  background-color: #FFF8E7;
+  color: #0A0A0A;
+  font-family: 'Inter', sans-serif;
+  background-image: radial-gradient(#0a0a0a 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Custom Neobrutalist Utilities */
+.nb-border {
+  border: 3px solid #0A0A0A;
+}
+
+.nb-shadow {
+  box-shadow: 4px 4px 0px #0A0A0A;
+}
+
+.nb-shadow-lg {
+  box-shadow: 6px 6px 0px #0A0A0A;
+}
+
+.nb-shadow-xl {
+  box-shadow: 8px 8px 0px #0A0A0A;
+}
+
+/* Hazard Stripes for Irreversible Detention */
+.hazard-stripes {
+  background: repeating-linear-gradient(
+    -45deg,
+    #FF3B30,
+    #FF3B30 18px,
+    #0A0A0A 18px,
+    #0A0A0A 36px
+  );
+}
+
+.hazard-stripes-subtle {
+  background: repeating-linear-gradient(
+    -45deg,
+    #ffebee,
+    #ffebee 12px,
+    #ffcdd2 12px,
+    #ffcdd2 24px
+  );
+}
+
+/* Marquee Animation */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Shake Animation for Irreversible Alert */
+@keyframes nb-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px) rotate(-1deg); }
+  40%, 80% { transform: translateX(6px) rotate(1deg); }
+}
+
+.animate-nb-shake {
+  animation: nb-shake 0.5s ease-in-out infinite;
+}
+
+/* Focus styles */
+input:focus, select:focus, textarea:focus, button:focus {
+  outline: 4px solid #4D96FF !important;
+  outline-offset: 2px;
+}
