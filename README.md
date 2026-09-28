@@ -1,5 +1,7 @@
 # ATTENDANCE PREDICTOR — SRM TRICHY (SCHOOL OF EEE)
 
+https://chetanveerabomma-blip.github.io/attendance-predictor/rooms/?tab=grid
+
 Official analytical attendance forecasting portal for SRM Trichy School of EEE students (Autumn Semester: **29 Aug 2026 to 29 Nov 2026**).
 
 Built strictly with **Next.js 14 (App Router)**, **TypeScript**, **Tailwind CSS**, **Custom Neobrutalism Design System**, **Zustand**, **Prisma + SQLite**, and **Vitest**.
