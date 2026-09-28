@@ -25,7 +25,7 @@ http://localhost:3000
 
 ## 🏗️ Architecture & Features
 
-### 1. Neobrutalist Design System
+### 1. Design System
 - **Hard Offset Shadows:** `box-shadow: 6px 6px 0 #0A0A0A` on cards, `4px 4px 0` on buttons
 - **Strict 3px Solid Borders:** Consistent dark ink borders (`#0A0A0A`) across every card, input, and badge
 - **Color Tokens:** Cream background (`#FFF8E7`), Ink (`#0A0A0A`), Card white (`#FFFFFF`), Yellow (`#FFD93D`), Pink (`#FF6B9D`), Blue (`#4D96FF`), Green (`#6BCB77`), Red (`#FF3B30`), Purple (`#B983FF`)

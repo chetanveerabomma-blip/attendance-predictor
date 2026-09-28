@@ -24,8 +24,9 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({
 
   return (
     <div
-      className={`border-[3px] border-nb-ink p-5 shadow-[6px_6px_0px_#0A0A0A] transition-all bg-white ${
-        isIrreversible ? "border-nb-red" : ""
+      id={`subject-${calc.code}`}
+      className={`border-[3px] border-nb-ink p-5 shadow-[6px_6px_0px_#0A0A0A] transition-all bg-white scroll-mt-24 ${
+        isIrreversible ? "border-nb-red ring-2 ring-nb-red/30" : ""
       }`}
     >
       {/* Header */}
@@ -88,6 +89,30 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Irreversible Action Banner */}
+      {isIrreversible && (
+        <div className="my-3 p-2.5 bg-red-50 border-2 border-nb-red flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-[2px_2px_0px_#E11D48]">
+          <div className="flex items-center gap-1.5 font-mono text-xs text-nb-red font-bold">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            <span>Detention Unavoidable (Max {calc.max_possible_percentage}%)</span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => onInputChange({ mode: "PERCENTAGE", percentage: 75.0, plannedSkips: 0 })}
+              className="px-2 py-1 bg-white text-nb-ink border border-nb-ink text-[11px] font-mono font-bold hover:bg-nb-yellow shadow-[1px_1px_0px_#0A0A0A] active:translate-x-0.5"
+            >
+              Action: Reset to 75%
+            </button>
+            <button
+              onClick={() => onInputChange({ plannedSkips: 0 })}
+              className="px-2 py-1 bg-nb-yellow text-nb-ink border border-nb-ink text-[11px] font-mono font-bold hover:bg-yellow-400 shadow-[1px_1px_0px_#0A0A0A] active:translate-x-0.5"
+            >
+              Clear Skips (0)
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Chunky Progress Bar */}
       <div className="my-4">

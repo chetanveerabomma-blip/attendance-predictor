@@ -46,6 +46,8 @@ import {
 } from "lucide-react";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 
+import { STATIC_TIMETABLES, STATIC_HOLIDAYS } from "@/lib/staticData";
+
 export default function DashboardPage() {
   const { data: session } = useSession();
   const {
@@ -65,9 +67,9 @@ export default function DashboardPage() {
     resetInputs,
   } = useAttendanceStore();
 
-  const [timetablesData, setTimetablesData] = useState<Record<string, any>>({});
-  const [holidaysData, setHolidaysData] = useState<Holiday[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [timetablesData, setTimetablesData] = useState<Record<string, any>>(STATIC_TIMETABLES);
+  const [holidaysData, setHolidaysData] = useState<Holiday[]>(STATIC_HOLIDAYS);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
   // Phase 2 Leave Simulator State
@@ -90,8 +92,12 @@ export default function DashboardPage() {
         const res = await fetch("/api/sections");
         if (res.ok) {
           const data = await res.json();
-          setTimetablesData(data.timetables || {});
-          setHolidaysData(data.holidays || []);
+          if (data.timetables && Object.keys(data.timetables).length > 0) {
+            setTimetablesData(data.timetables);
+          }
+          if (data.holidays && data.holidays.length > 0) {
+            setHolidaysData(data.holidays);
+          }
         }
 
         const leavesRes = await fetch("/api/leaves");
@@ -100,11 +106,22 @@ export default function DashboardPage() {
           if (leavesJson.leaves && leavesJson.leaves.length > 0) {
             setSimulatedLeaves(leavesJson.leaves);
           }
+        } else {
+          // Fallback to localStorage for static deployments
+          if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("attendance_leaves_storage");
+            if (saved) {
+              try {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  setSimulatedLeaves(parsed);
+                }
+              } catch (_) {}
+            }
+          }
         }
       } catch (err) {
-        console.error("Failed to load dashboard data:", err);
-      } finally {
-        setLoading(false);
+        console.warn("API route not available, using client-side static storage:", err);
       }
     }
     loadData();
