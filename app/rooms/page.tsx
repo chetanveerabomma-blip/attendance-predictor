@@ -246,29 +246,31 @@ function RoomsPageContent() {
 
       {/* TAB 1: 3D INTERACTIVE MAP */}
       {activeTab === "map" && (
-        <div className="relative">
-          <BuildingScene
-            layoutData={layoutData}
-            roomsStatusMap={roomsStatusMap}
-            claimsMap={claims}
-            viewState={viewState}
-            onSelectRoom={(rId) => setViewState((prev) => ({ ...prev, selectedRoomId: rId }))}
-            onHoverRoom={(rId) => setViewState((prev) => ({ ...prev, hoveredRoomId: rId }))}
-            onSelectFloor={(f) => setViewState((prev) => ({ ...prev, activeFloor: f }))}
-            onDeselect={() => setViewState((prev) => ({ ...prev, selectedRoomId: null }))}
-          />
+        <div className="space-y-4">
+          <div className="relative">
+            <BuildingScene
+              layoutData={layoutData}
+              roomsStatusMap={roomsStatusMap}
+              claimsMap={claims}
+              viewState={viewState}
+              onSelectRoom={(rId) => setViewState((prev) => ({ ...prev, selectedRoomId: rId }))}
+              onHoverRoom={(rId) => setViewState((prev) => ({ ...prev, hoveredRoomId: rId }))}
+              onSelectFloor={(f) => setViewState((prev) => ({ ...prev, activeFloor: f }))}
+              onDeselect={() => setViewState((prev) => ({ ...prev, selectedRoomId: null }))}
+            />
 
-          <MapControlsOverlay
-            viewState={viewState}
-            selectedTime={selectedTime}
-            onTimeChange={(t) => setTime(t)}
-            onResetTimeNow={() => setLiveTime(currentDateStr, currentTimeShort)}
-            onUpdateViewState={(updates) => setViewState((prev) => ({ ...prev, ...updates }))}
-          />
+            <MapControlsOverlay
+              viewState={viewState}
+              selectedTime={selectedTime}
+              onTimeChange={(t) => setTime(t)}
+              onResetTimeNow={() => setLiveTime(currentDateStr, currentTimeShort)}
+              onUpdateViewState={(updates) => setViewState((prev) => ({ ...prev, ...updates }))}
+            />
+          </div>
 
-          {/* Floating Room Panel when room is selected */}
+          {/* Keep selected room details outside the canvas so they never obscure the model. */}
           {selectedStatusData && (
-            <div className="absolute bottom-20 left-14 right-3 z-30 max-h-[45%] overflow-y-auto sm:top-4 sm:bottom-auto sm:left-auto sm:right-4 sm:w-[420px] sm:max-h-[90vh] sm:overflow-visible">
+            <div className="w-full max-w-2xl">
               <RoomPanel
                 statusData={selectedStatusData}
                 selectedTime={selectedTime}
