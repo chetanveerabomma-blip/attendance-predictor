@@ -64,7 +64,6 @@ Tests cover:
 - Planned skips future projection
 
 ---
-
 ## 📋 Assumptions Made
 
 1. **Registration Number Format:** Formatted as `^[A-Z]{2}\d{10,13}$` (e.g. `RA2611003010042` or `TR2600000000001`), case-insensitive and normalized to uppercase.
@@ -73,3 +72,5 @@ Tests cover:
    - **Session Mode:** Contiguous lab periods on the same day are grouped into a single class count.
 3. **Current Date Treatment:** Default today is fixed to `2026-09-28` in IST (mid-semester point with 62 calendar days and 50 working days remaining until 29 Nov 2026). A toggle allows marking today's classes as completed.
 4. **Planning Date:** Selectable from today up to `2026-11-29`, allowing students to simulate symposium leaves or holiday periods.
+
+https://github.com/chetanveerabomma-blip/attendance-predictor
