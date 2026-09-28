@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -22,10 +22,21 @@ function LoginForm() {
   const [forgotModal, setForgotModal] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [isGitHubPages, setIsGitHubPages] = useState(false);
+
+  useEffect(() => {
+    setIsGitHubPages(window.location.hostname.endsWith(".github.io"));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
+
+    if (isGitHubPages) {
+      setErrorMsg("Registration-number login is unavailable on GitHub Pages because it does not host the authentication or database API. Use a server-backed deployment to sign in.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -73,6 +84,11 @@ function LoginForm() {
       </div>
 
       <NBCard variant="white" shadowSize="lg" className="p-6 space-y-6">
+        {isGitHubPages && (
+          <NBAlert variant="warning" title="Server Login Required">
+            GitHub Pages hosts static files only. Registration-number accounts work on the server-backed app, not this static deployment.
+          </NBAlert>
+        )}
         {searchParams?.get("error") === "admin_required" && (
           <NBAlert variant="danger" title="Admin Privilege Required">
             You must have faculty/admin credentials to access the Administration Console.

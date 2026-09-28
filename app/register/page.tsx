@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { NBCard } from "@/components/nb/NBCard";
@@ -13,6 +13,11 @@ import { UserPlus, ArrowRight, Check } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [isGitHubPages, setIsGitHubPages] = useState(false);
+
+  useEffect(() => {
+    setIsGitHubPages(window.location.hostname.endsWith(".github.io"));
+  }, []);
   const [formData, setFormData] = useState({
     name: "",
     regNo: "",
@@ -45,6 +50,11 @@ export default function RegisterPage() {
     e.preventDefault();
     setErrors({});
     setGlobalError("");
+
+    if (isGitHubPages) {
+      setGlobalError("Account registration is unavailable on GitHub Pages because it does not host the authentication or database API. Use a server-backed deployment to create an account.");
+      return;
+    }
 
     // Client validation
     const newErrors: Record<string, string> = {};
@@ -124,6 +134,11 @@ export default function RegisterPage() {
       </div>
 
       <NBCard variant="white" shadowSize="lg" className="p-6 sm:p-8 space-y-6">
+        {isGitHubPages && (
+          <NBAlert variant="warning" title="Server Registration Required">
+            GitHub Pages hosts static files only. Account creation requires the server-backed app.
+          </NBAlert>
+        )}
         {globalError && (
           <NBAlert variant="danger" title="Registration Error">
             {globalError}
