@@ -27,32 +27,31 @@ export function formatFloorText(floor: number | null | undefined): string {
   return `${floor}th floor`;
 }
 
-export function buildSquadMessage(params: SquadMessageParams): string {
+export function buildSquadMessage(params: SquadMessageParams & { includeLink?: boolean }): string {
   const {
     roomId,
     roomLabel,
     floor,
     freeUntil,
     isRestOfDay,
+    includeLink = false,
     untilEpoch,
     appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://ssf-vc.vercel.app",
   } = params;
 
   const displayRoom = (roomLabel || roomId).replace(/-/g, " ");
-  const floorText = formatFloorText(floor);
 
   const timeText = isRestOfDay
     ? "the rest of the day"
     : freeUntil
     ? formatTime12Hour(freeUntil)
-    : "further notice";
+    : "2:30 PM";
 
   const untilParam = untilEpoch ? `?until=${untilEpoch}` : "";
-  const link = `${appUrl}/r/${encodeURIComponent(roomId)}${untilParam}`;
+  const link = includeLink ? ` ${appUrl}/r/${encodeURIComponent(roomId)}${untilParam}` : "";
 
-  const message = `📍 Heading to ${displayRoom} (${floorText}). It's free until ${timeText}. Come fast! 🏃 ${link}`;
+  const message = `📍 Heading to ${displayRoom}. It's free until ${timeText}. Come fast!${link}`;
 
-  // Clean control characters and cap at 300 characters
   return message.replace(/[\x00-\x1F\x7F]/g, "").slice(0, 300);
 }
 

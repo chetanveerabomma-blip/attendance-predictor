@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { RoomAvailabilityStatus } from "@/lib/engine/rooms";
 import { RoomTile } from "./RoomTile";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { clsx } from "clsx";
+import { ChevronDown, ChevronUp, Send } from "lucide-react";
+import { buildSquadMessage, getWhatsAppUrl } from "@/lib/squad/whatsapp";
 
 export interface FloorSectionProps {
   floorNumber: number | null;
@@ -20,8 +20,14 @@ export const FloorSection: React.FC<FloorSectionProps> = ({
   const [isExpanded, setIsExpanded] = useState(true);
 
   const total = rooms.length;
-  const freeCount = rooms.filter((r) => r.status === "FREE" || r.status === "FREE_SOON").length;
+  const freeRooms = rooms.filter((r) => r.status === "FREE" || r.status === "FREE_SOON");
+  const freeCount = freeRooms.length;
   const freePercent = total > 0 ? Math.round((freeCount / total) * 100) : 0;
+
+  // Best available free room on this floor for instant squad call
+  const bestFreeRoom = freeRooms.length > 0
+    ? [...freeRooms].sort((a, b) => (b.freeMinutes || 0) - (a.freeMinutes || 0))[0]
+    : null;
 
   return (
     <div className="w-full bg-white border-[3px] border-black rounded-[4px] shadow-[6px_6px_0px_#0A0A0A] overflow-hidden mb-8 transition-all">
@@ -82,6 +88,39 @@ export const FloorSection: React.FC<FloorSectionProps> = ({
           )}
         </div>
       )}
+
+      {/* Floor Section Footer: The "Call the Squad" Feature in the very last tiny corner */}
+      <div className="px-4 py-2.5 bg-[#F8F9FA] border-t-2 border-black flex items-center justify-between flex-wrap gap-2 text-xs">
+        <span className="font-mono text-[11px] text-gray-600 font-medium">
+          {freeCount > 0
+            ? `⚡ ${freeCount} space(s) available on this level`
+            : "🔒 All rooms currently occupied on this floor"}
+        </span>
+
+        {bestFreeRoom ? (
+          <button
+            onClick={() => {
+              const msg = buildSquadMessage({
+                roomId: bestFreeRoom.roomId,
+                roomLabel: bestFreeRoom.room.label,
+                floor: bestFreeRoom.room.floor,
+                freeUntil: bestFreeRoom.freeUntil,
+                isRestOfDay: !bestFreeRoom.nextBooking && bestFreeRoom.status === "FREE",
+              });
+              window.open(getWhatsAppUrl(msg), "_blank");
+            }}
+            title={`Call the squad to ${bestFreeRoom.room.label || bestFreeRoom.roomId} on WhatsApp`}
+            className="flex items-center gap-1.5 px-3 py-1 bg-[#25D366] text-black font-mono text-[11px] font-black uppercase rounded-[2px] border-2 border-black shadow-[2px_2px_0px_#0A0A0A] hover:bg-[#20ba59] active:translate-x-0.5 active:translate-y-0.5 transition-all"
+          >
+            <Send size={12} />
+            <span>CALL THE SQUAD ({bestFreeRoom.room.label || bestFreeRoom.roomId})</span>
+          </button>
+        ) : (
+          <span className="font-mono text-[10px] text-gray-400 font-bold uppercase">
+            No vacant rooms on this floor
+          </span>
+        )}
+      </div>
     </div>
   );
 };

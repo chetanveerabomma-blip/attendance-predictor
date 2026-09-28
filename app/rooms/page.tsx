@@ -331,6 +331,8 @@ function RoomsPageContent() {
           isOpen={isClaimModalOpen}
           roomId={roomToClaim}
           roomLabel={roomsStatusMap[roomToClaim]?.room.label}
+          floor={roomsStatusMap[roomToClaim]?.room.floor}
+          freeUntil={roomsStatusMap[roomToClaim]?.freeUntil}
           onClose={() => {
             setIsClaimModalOpen(false);
             setRoomToClaim(null);
