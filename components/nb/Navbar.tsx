@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { NBButton } from "./NBButton";
@@ -8,7 +8,29 @@ import { Menu, X, ShieldAlert, User, LogOut, LayoutDashboard } from "lucide-reac
 
 export const Navbar: React.FC = () => {
   const { data: session } = useSession();
+  const [staticUser, setStaticUser] = useState<{ name?: string; role?: string; regNo?: string } | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("attendance_user_session");
+      if (stored) setStaticUser(JSON.parse(stored));
+    } catch (_) {}
+  }, []);
+
+  const currentUser = session?.user || staticUser;
+
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("attendance_user_session");
+    }
+    setStaticUser(null);
+    if (session) {
+      signOut({ callbackUrl: "/" });
+    } else {
+      window.location.href = "./";
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-40 bg-white border-b-[3px] border-nb-ink shadow-[0_4px_0_#0A0A0A]">
@@ -50,7 +72,7 @@ export const Navbar: React.FC = () => {
               FAQ
             </Link>
 
-            {session?.user ? (
+            {currentUser ? (
               <div className="flex items-center gap-3">
                 <Link href="/dashboard">
                   <NBButton size="sm" variant="primary">
@@ -66,7 +88,7 @@ export const Navbar: React.FC = () => {
                   </NBButton>
                 </Link>
 
-                {(session.user as any).role === "ADMIN" && (
+                {(currentUser as any).role === "ADMIN" && (
                   <Link href="/admin">
                     <NBButton size="sm" variant="purple">
                       <ShieldAlert className="w-4 h-4 mr-1.5" />
@@ -76,7 +98,7 @@ export const Navbar: React.FC = () => {
                 )}
 
                 <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
+                  onClick={handleLogout}
                   className="font-mono text-xs font-bold text-nb-red hover:underline p-1 flex items-center gap-1"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -101,7 +123,7 @@ export const Navbar: React.FC = () => {
 
           {/* Mobile menu toggle */}
           <div className="md:hidden flex items-center gap-2">
-            {session?.user && (
+            {currentUser && (
               <Link href="/dashboard">
                 <NBButton size="sm" variant="primary">
                   Calc

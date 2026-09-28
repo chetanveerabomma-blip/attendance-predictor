@@ -131,6 +131,14 @@ export default function DashboardPage() {
   useEffect(() => {
     if (session?.user && (session.user as any).sectionId && !sectionId) {
       setSectionId((session.user as any).sectionId);
+    } else if (!sectionId && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("attendance_user_session");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.sectionId) setSectionId(parsed.sectionId);
+        }
+      } catch (_) {}
     }
   }, [session, sectionId, setSectionId]);
 

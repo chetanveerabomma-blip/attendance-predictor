@@ -51,11 +51,6 @@ export default function RegisterPage() {
     setErrors({});
     setGlobalError("");
 
-    if (isGitHubPages) {
-      setGlobalError("Account registration is unavailable on GitHub Pages because it does not host the authentication or database API. Use a server-backed deployment to create an account.");
-      return;
-    }
-
     // Client validation
     const newErrors: Record<string, string> = {};
     const regNoRegex = /^[A-Za-z]{2}\d{10,13}$/;
@@ -81,6 +76,25 @@ export default function RegisterPage() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      return;
+    }
+
+    if (isGitHubPages) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "attendance_user_session",
+          JSON.stringify({
+            regNo: formData.regNo.trim().toUpperCase(),
+            name: formData.name.trim(),
+            role: "STUDENT",
+            sectionId: formData.sectionId,
+          })
+        );
+      }
+      setSuccess(true);
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1200);
       return;
     }
 
@@ -135,9 +149,14 @@ export default function RegisterPage() {
 
       <NBCard variant="white" shadowSize="lg" className="p-6 sm:p-8 space-y-6">
         {isGitHubPages && (
-          <NBAlert variant="warning" title="Server Registration Required">
-            GitHub Pages hosts static files only. Account creation requires the server-backed app.
-          </NBAlert>
+          <div className="p-3 bg-yellow-50 border-2 border-nb-ink rounded font-mono text-xs text-zinc-800 space-y-1 shadow-[2px_2px_0px_#0A0A0A]">
+            <div className="font-heading font-black uppercase text-xs flex items-center gap-1.5 text-nb-ink">
+              <span>🚀 Offline / Demo Registration Active</span>
+            </div>
+            <p className="text-[11px] text-zinc-600">
+              On this static deployment, your account and selected section are stored directly in your browser.
+            </p>
+          </div>
         )}
         {globalError && (
           <NBAlert variant="danger" title="Registration Error">

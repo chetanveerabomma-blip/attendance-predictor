@@ -33,7 +33,20 @@ function LoginForm() {
     setErrorMsg("");
 
     if (isGitHubPages) {
-      setErrorMsg("Registration-number login is unavailable on GitHub Pages because it does not host the authentication or database API. Use a server-backed deployment to sign in.");
+      // On static GitHub Pages, establish a client-side session and proceed to dashboard
+      const cleanReg = regNo.trim().toUpperCase() || "RA2611003010042";
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "attendance_user_session",
+          JSON.stringify({
+            regNo: cleanReg,
+            name: cleanReg === "RA2611003010001" ? "Faculty Admin (HOD EEE)" : `Student (${cleanReg})`,
+            role: cleanReg === "RA2611003010001" ? "ADMIN" : "STUDENT",
+            sectionId: "2-ece-a",
+          })
+        );
+      }
+      router.push("/dashboard");
       return;
     }
 
@@ -85,9 +98,14 @@ function LoginForm() {
 
       <NBCard variant="white" shadowSize="lg" className="p-6 space-y-6">
         {isGitHubPages && (
-          <NBAlert variant="warning" title="Server Login Required">
-            GitHub Pages hosts static files only. Registration-number accounts work on the server-backed app, not this static deployment.
-          </NBAlert>
+          <div className="p-3 bg-yellow-50 border-2 border-nb-ink rounded font-mono text-xs text-zinc-800 space-y-1 shadow-[2px_2px_0px_#0A0A0A]">
+            <div className="font-heading font-black uppercase text-xs flex items-center gap-1.5 text-nb-ink">
+              <span>🚀 Offline / Demo Mode Active</span>
+            </div>
+            <p className="text-[11px] text-zinc-600">
+              Enter any College Registration Number (or click a Quick Demo option below) to enter the calculator instantly.
+            </p>
+          </div>
         )}
         {searchParams?.get("error") === "admin_required" && (
           <NBAlert variant="danger" title="Admin Privilege Required">
