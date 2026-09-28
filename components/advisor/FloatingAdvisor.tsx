@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Bot, Copy, ThumbsUp, ThumbsDown, Sparkles, AlertTriangle } from "lucide-react";
 import { NBButton } from "../nb/NBButton";
+import { MarkdownMessage } from "./MarkdownMessage";
 
 export interface MessageItem {
   id: string;
@@ -202,7 +203,7 @@ export const FloatingAdvisor: React.FC = () => {
                       : "bg-white text-nb-ink shadow-[4px_4px_0px_#0A0A0A]"
                   }`}
                 >
-                  <div className="whitespace-pre-wrap leading-relaxed">{m.text}</div>
+                  <MarkdownMessage content={m.text} isUser={m.sender === "user"} />
 
                   {/* Structured Result Card */}
                   {m.resultCard && (
