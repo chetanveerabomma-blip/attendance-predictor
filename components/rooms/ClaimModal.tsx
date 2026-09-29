@@ -113,17 +113,38 @@ export const ClaimModal: React.FC<ClaimModalProps> = ({
             </div>
           </div>
 
-          <div className="pt-3 border-t border-gray-200 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={handleModalClose}
-              className="px-4 py-2 border-2 border-black rounded font-heading font-bold text-xs uppercase"
+          {/* Instant WhatsApp message preview */}
+          <div className="p-3 bg-[#FFF8E7] border-2 border-black rounded-[2px] space-y-1">
+            <span className="font-heading font-black uppercase text-[10px] text-gray-700 block">
+              Pre-filled WhatsApp Invite:
+            </span>
+            <div className="font-mono text-xs font-bold text-black select-all">
+              &quot;{squadMsg}&quot;
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-gray-200 flex flex-wrap justify-between items-center gap-2">
+            <a
+              href={getWhatsAppUrl(squadMsg)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-2 px-3 bg-[#25D366] text-black font-heading font-black text-xs uppercase rounded border-2 border-black shadow-[2px_2px_0px_#0A0A0A] hover:bg-[#20ba59] active:translate-x-0.5 active:translate-y-0.5 flex items-center gap-1.5 transition-all"
             >
-              CANCEL
-            </button>
-            <NBButton type="submit" variant="yellow" size="sm" disabled={loading}>
-              <Flag size={14} /> {loading ? "HOLDING ROOM..." : "CONFIRM CLAIM"}
-            </NBButton>
+              <Send size={13} /> INVITE FRIENDS (WHATSAPP)
+            </a>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleModalClose}
+                className="px-3 py-2 border-2 border-black rounded font-heading font-bold text-xs uppercase hover:bg-gray-100"
+              >
+                CANCEL
+              </button>
+              <NBButton type="submit" variant="yellow" size="sm" disabled={loading}>
+                <Flag size={14} /> {loading ? "HOLDING ROOM..." : "CONFIRM CLAIM"}
+              </NBButton>
+            </div>
           </div>
         </form>
       ) : (

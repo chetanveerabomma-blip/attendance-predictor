@@ -243,6 +243,10 @@ export const RoomPanel: React.FC<RoomPanelProps> = ({
 
         {status === "FREE" && (
           <div className="space-y-2">
+            <div className="p-2 bg-[#FFF8E7] border-2 border-black rounded-[2px] font-mono text-[11px] font-bold text-black select-all">
+              &quot;{squadMsg}&quot;
+            </div>
+
             <a
               href={getWhatsAppUrl(squadMsg)}
               target="_blank"

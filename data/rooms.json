@@ -11,6 +11,7 @@
   { "id": "IST-411", "label": "IST 411", "floor": 3, "type": "CLASSROOM", "ac": null, "capacity": null, "notes": "Home room: II ECE-DS B (AN)" },
   { "id": "IST-416", "label": "IST 416", "floor": 3, "type": "CLASSROOM", "ac": null, "capacity": null, "notes": "Home room: II ECE-DS A (FN)" },
   { "id": "IST-502", "label": "IST 502", "floor": 4, "type": "CLASSROOM", "ac": null, "capacity": null, "notes": "Year I ECE-DS Core Room" },
+  { "id": "IST-509", "label": "IST 509", "floor": 4, "type": "CLASSROOM", "ac": true, "capacity": 60, "notes": "Smart Lecture Hall / Project Room" },
   { "id": "IST-510", "label": "IST 510", "floor": 4, "type": "CLASSROOM", "ac": null, "capacity": null, "notes": "CDC / Elective Room" },
   { "id": "IST-518", "label": "IST 518", "floor": 4, "type": "CLASSROOM", "ac": null, "capacity": null, "notes": "Home room: III ECE-A (FN) & III ECE-B (AN)" },
   { "id": "IST-519", "label": "IST 519", "floor": 4, "type": "CLASSROOM", "ac": null, "capacity": null, "notes": "Home room: III ECE-DS (FN)" },
