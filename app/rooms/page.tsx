@@ -30,7 +30,15 @@ import {
   Sparkles,
   Layers,
   Flag,
+  Send,
+  Snowflake,
+  Users,
+  ArrowRight,
 } from "lucide-react";
+import { FloatingAdvisor } from "@/components/advisor/FloatingAdvisor";
+import { parseQueryWithRegex } from "@/lib/parse";
+import { RoomMatch, findRooms } from "@/lib/engine/rooms";
+import { buildSquadMessage, getWhatsAppUrl } from "@/lib/squad/whatsapp";
 
 // Dynamically import 3D Scene with ssr: false
 const BuildingScene = dynamic(
@@ -93,6 +101,25 @@ function RoomsPageContent() {
   const [claims, setClaims] = useState<Record<string, SquadClaimData>>({});
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
   const [roomToClaim, setRoomToClaim] = useState<string | null>(null);
+
+  // Tab 4 Inline Finder State
+  const [inlineMatches, setInlineMatches] = useState<RoomMatch[] | null>(null);
+  const [inlineQuery, setInlineQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handleInlineSearch = (q: string) => {
+    setInlineQuery(q);
+    setIsSearching(true);
+    try {
+      const parsed = parseQueryWithRegex(q);
+      const res = findRooms(parsed);
+      setInlineMatches(res.matches.length > 0 ? res.matches : res.partial);
+    } catch {
+      setInlineMatches([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   useEffect(() => {
     if (!liveClockInitialized.current) {
@@ -318,10 +345,100 @@ function RoomsPageContent() {
               AI ROOM FINDER
             </h2>
             <p className="font-mono text-xs text-gray-700 mb-4">
-              Enter queries in plain English like "Ground floor AC room for 2 hours".
+              Enter queries in plain English like &quot;Ground floor AC room for 2 hours&quot; or &quot;Where can our squad study?&quot;
             </p>
-            <FinderBar onSearch={(q) => router.push(`/finder?q=${encodeURIComponent(q)}`)} />
+            <FinderBar onSearch={handleInlineSearch} isLoading={isSearching} />
           </div>
+
+          {/* Inline Search Results */}
+          {inlineMatches && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="font-heading font-black text-sm uppercase text-black">
+                  MATCHING ROOMS ({inlineMatches.length})
+                </span>
+                <button
+                  onClick={() => router.push(`/finder?q=${encodeURIComponent(inlineQuery)}`)}
+                  className="font-mono text-xs font-bold text-gray-700 hover:text-black flex items-center gap-1 underline underline-offset-2"
+                >
+                  Open Full Assistant Page <ArrowRight size={13} />
+                </button>
+              </div>
+
+              {inlineMatches.length === 0 ? (
+                <div className="p-6 bg-white border-2 border-black rounded text-center font-mono text-xs font-bold text-gray-600">
+                  No rooms found matching your search. Try changing floor, capacity, or time requirements.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {inlineMatches.map((m) => {
+                    const squadMsg = buildSquadMessage({
+                      roomId: m.room.id,
+                      roomLabel: m.room.label,
+                      floor: m.room.floor,
+                      freeUntil: m.window.endTime,
+                    });
+                    const waUrl = getWhatsAppUrl(squadMsg);
+
+                    return (
+                      <div
+                        key={m.room.id}
+                        className="p-4 bg-white border-[3px] border-black rounded-[4px] shadow-[4px_4px_0px_#0A0A0A] flex flex-col justify-between space-y-3"
+                      >
+                        <div>
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xl font-black text-black">
+                                  {m.room.label || m.room.id}
+                                </span>
+                                <span className="px-2 py-0.5 bg-[#FFD93D] font-mono text-[10px] font-black uppercase border border-black rounded-[2px]">
+                                  {m.room.floor !== null ? `FLOOR ${m.room.floor}` : "ANNEX"}
+                                </span>
+                              </div>
+                              <span className="font-mono text-xs text-gray-600 block mt-0.5">
+                                {m.room.notes || m.room.type}
+                              </span>
+                            </div>
+
+                            <span className="px-2 py-0.5 bg-[#6BCB77] text-black font-mono text-[10px] font-black uppercase border border-black rounded-[2px]">
+                              {m.minutesAvailable} MIN FREE
+                            </span>
+                          </div>
+
+                          <div className="mt-2 p-2 bg-[#F8F9FA] border border-black rounded-[2px] font-mono text-xs">
+                            <span className="font-bold text-black">
+                              Free Window: {m.window.startTime} → {m.window.endTime}
+                            </span>
+                            <p className="text-gray-600 text-[11px] mt-0.5">{m.why}</p>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="pt-2 border-t border-gray-200 flex flex-col sm:flex-row items-center gap-2">
+                          <a
+                            href={waUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full sm:flex-1 py-1.5 px-3 bg-[#25D366] text-black font-heading font-black text-[11px] uppercase rounded-[2px] border-2 border-black shadow-[2px_2px_0px_#0A0A0A] hover:bg-[#20ba59] active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-1.5 transition-all"
+                          >
+                            <Send size={13} /> CALL THE SQUAD
+                          </a>
+
+                          <button
+                            onClick={() => handleClaimRoom(m.room.id)}
+                            className="w-full sm:w-auto py-1.5 px-3 bg-[#FFD93D] text-black font-heading font-black text-[11px] uppercase rounded-[2px] border-2 border-black shadow-[2px_2px_0px_#0A0A0A] hover:bg-yellow-400 active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-1"
+                          >
+                            <Flag size={13} /> CLAIM
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -340,6 +457,9 @@ function RoomsPageContent() {
           onConfirmClaim={handleConfirmClaim}
         />
       )}
+
+      {/* AI Chatbot Floating Advisor */}
+      <FloatingAdvisor />
     </div>
   );
 }

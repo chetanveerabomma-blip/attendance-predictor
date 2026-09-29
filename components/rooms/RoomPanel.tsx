@@ -243,14 +243,14 @@ export const RoomPanel: React.FC<RoomPanelProps> = ({
 
         {status === "FREE" && (
           <div className="space-y-2">
-            <NBButton
-              variant="green"
-              size="md"
-              className="w-full"
-              onClick={handleOpenWhatsApp}
+            <a
+              href={getWhatsAppUrl(squadMsg)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#25D366] text-black font-heading font-black text-xs uppercase rounded-[2px] border-[3px] border-black shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#20ba59] active:translate-x-0.5 active:translate-y-0.5 transition-all"
             >
               <Send size={15} /> CALL THE SQUAD (WHATSAPP)
-            </NBButton>
+            </a>
 
             <div className="flex items-center gap-2">
               <button

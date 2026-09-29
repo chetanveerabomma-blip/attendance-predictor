@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Bot, Copy, ThumbsUp, ThumbsDown, Sparkles, AlertTriangle } from "lucide-react";
 import { NBButton } from "../nb/NBButton";
 import { MarkdownMessage } from "./MarkdownMessage";
+import { generateClientAdvisorReply } from "@/lib/advisor/clientEngine";
+import { useAttendanceStore } from "@/lib/store";
 
 export interface MessageItem {
   id: string;
@@ -41,6 +43,8 @@ export const FloatingAdvisor: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  const attendanceState = useAttendanceStore();
+
   const handleSend = async (textToSend?: string) => {
     const query = (textToSend || input).trim();
     if (!query || loading) return;
@@ -63,36 +67,31 @@ export const FloatingAdvisor: React.FC = () => {
         body: JSON.stringify({ message: query }),
       });
 
-      const data = await res.json();
       if (!res.ok) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Math.random().toString(),
-            sender: "advisor",
-            text: `⚠ ${data.error || "Advisor is temporarily offline. Use the Leave Simulator tab for identical math."}`,
-            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          },
-        ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Math.random().toString(),
-            sender: "advisor",
-            text: data.reply,
-            resultCard: data.resultCard,
-            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          },
-        ]);
+        throw new Error("API route unavailable");
       }
-    } catch {
+
+      const data = await res.json();
       setMessages((prev) => [
         ...prev,
         {
           id: Math.random().toString(),
           sender: "advisor",
-          text: "⚠ Communication error. Please ensure your local server is running.",
+          text: data.reply,
+          resultCard: data.resultCard,
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    } catch {
+      // Offline / Static GitHub Pages fallback
+      const clientReply = generateClientAdvisorReply(query, attendanceState);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Math.random().toString(),
+          sender: "advisor",
+          text: clientReply.reply,
+          resultCard: clientReply.resultCard,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
@@ -115,8 +114,11 @@ export const FloatingAdvisor: React.FC = () => {
   };
 
   const suggestedPrompts = [
+    "📍 Heading to IST 509",
+    "Call the Squad for free room",
     "Can I skip tomorrow?",
     "Which subject is most at risk?",
+    "Find vacant room on Floor 4",
     "How many classes do I need for 90%?",
     "What if I take OD for 2 days?",
   ];

@@ -98,23 +98,24 @@ export const FloorSection: React.FC<FloorSectionProps> = ({
         </span>
 
         {bestFreeRoom ? (
-          <button
-            onClick={() => {
-              const msg = buildSquadMessage({
+          <a
+            href={getWhatsAppUrl(
+              buildSquadMessage({
                 roomId: bestFreeRoom.roomId,
                 roomLabel: bestFreeRoom.room.label,
                 floor: bestFreeRoom.room.floor,
                 freeUntil: bestFreeRoom.freeUntil,
                 isRestOfDay: !bestFreeRoom.nextBooking && bestFreeRoom.status === "FREE",
-              });
-              window.open(getWhatsAppUrl(msg), "_blank");
-            }}
+              })
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
             title={`Call the squad to ${bestFreeRoom.room.label || bestFreeRoom.roomId} on WhatsApp`}
             className="flex items-center gap-1.5 px-3 py-1 bg-[#25D366] text-black font-mono text-[11px] font-black uppercase rounded-[2px] border-2 border-black shadow-[2px_2px_0px_#0A0A0A] hover:bg-[#20ba59] active:translate-x-0.5 active:translate-y-0.5 transition-all"
           >
             <Send size={12} />
             <span>CALL THE SQUAD ({bestFreeRoom.room.label || bestFreeRoom.roomId})</span>
-          </button>
+          </a>
         ) : (
           <span className="font-mono text-[10px] text-gray-400 font-bold uppercase">
             No vacant rooms on this floor

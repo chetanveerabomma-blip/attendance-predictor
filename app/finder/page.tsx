@@ -6,6 +6,7 @@ import { FinderBar } from "@/components/finder/FinderBar";
 import { InterpretationStrip } from "@/components/finder/InterpretationStrip";
 import { ResultCard } from "@/components/finder/ResultCard";
 import { RoomMatch, findRooms } from "@/lib/engine/rooms";
+import { parseQueryWithRegex } from "@/lib/parse";
 import { RoomQuery } from "@/lib/schemas";
 import { FloorNav } from "@/components/floor/FloorNav";
 import { NBSticker } from "@/components/nb/NBSticker";
@@ -36,21 +37,36 @@ function FinderPageContent() {
         body: JSON.stringify({ query: text }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.error || "Failed to process query");
+        throw new Error("API unavailable");
       }
 
+      const data = await res.json();
       setAiMessage(data.message || null);
       setParsedQuery(data.query || null);
       setAssumptions(data.assumptions || []);
       setMatches(data.matches || []);
       setPartialMatches(data.partial || []);
       setIsFallback(Boolean(data.isFallback));
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "An error occurred while finding rooms.");
+    } catch {
+      // Offline / Static GitHub Pages fallback
+      try {
+        const parsed = parseQueryWithRegex(text);
+        const searchRes = findRooms(parsed);
+        setParsedQuery(parsed);
+        setAssumptions(parsed.assumptions);
+        setMatches(searchRes.matches);
+        setPartialMatches(searchRes.partial);
+        setIsFallback(true);
+        const count = searchRes.matches.length;
+        setAiMessage(
+          count > 0
+            ? `Client Room Engine: Found ${count} matching room${count > 1 ? "s" : ""} on campus.`
+            : `Client Room Engine: Showing ${searchRes.partial.length} partially matching space(s).`
+        );
+      } catch (err: any) {
+        setError("Unable to process room query. Please try different keywords.");
+      }
     } finally {
       setIsLoading(false);
     }

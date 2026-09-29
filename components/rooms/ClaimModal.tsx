@@ -149,12 +149,14 @@ export const ClaimModal: React.FC<ClaimModalProps> = ({
 
           {/* Action Buttons */}
           <div className="pt-2 space-y-2">
-            <button
-              onClick={handleOpenWhatsApp}
-              className="w-full py-2.5 px-4 bg-[#25D366] text-black font-heading text-xs font-black uppercase rounded-[2px] border-[3px] border-black shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#20ba59] active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-2"
+            <a
+              href={getWhatsAppUrl(squadMsg)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 px-4 bg-[#25D366] text-black font-heading text-xs font-black uppercase rounded-[2px] border-[3px] border-black shadow-[4px_4px_0px_#0A0A0A] hover:bg-[#20ba59] active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-2 transition-all"
             >
               <Send size={15} /> CALL THE SQUAD (OPEN WHATSAPP)
-            </button>
+            </a>
 
             <div className="flex items-center gap-2">
               <button
